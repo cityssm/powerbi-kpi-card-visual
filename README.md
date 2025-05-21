@@ -28,10 +28,10 @@ This package includes a set of 77 SVG [Lucide Icons](https://lucide.dev/icons/)
 -  Open Power BI Desltop and Import the Package in the dist folder.
 
 ## Example Cards
-![image](https://github.com/user-attachments/assets/c7b5e05b-1ad1-4cfb-a586-1cfdaea6156a)
+![image](https://github.com/user-attachments/assets/e81b46b1-d20a-42d4-8f3f-5808f6a82088)
+
 
 ## Text, Style, and Data Configuration Examples:
-![image](https://github.com/user-attachments/assets/cf61fdcf-86e4-44a6-8d47-a24823cb0ff6)
-![image](https://github.com/user-attachments/assets/5c90f2c7-8a88-451e-8182-61619f68377e)
-![image](https://github.com/user-attachments/assets/509cc700-7b2a-4783-8328-825cf2282be7)
+![image](https://github.com/user-attachments/assets/c5d7b885-d899-4aba-bfcb-a8169a5c5d3b)
+
 

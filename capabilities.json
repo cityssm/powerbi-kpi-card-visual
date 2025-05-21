@@ -1,0 +1,197 @@
+{
+  "suppressDefaultTitle": true,
+
+  "dataRoles": [
+    {
+      "name": "values",
+      "kind": "GroupingOrMeasure",
+      "displayName": "Values"
+    }
+  ],
+  "objects": {
+    "text": {
+      "properties": {
+        "title_fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "title_fontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "title_bold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "title_italic": {
+          "type": {
+            "bool": true
+          }
+        },
+        "title_underline": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_top_fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "footer_text_top_fontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "footer_text_top_bold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_top_italic": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_top_underline": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_bottom_fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "footer_text_bottom_fontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "footer_text_bottom_bold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_bottom_italic": {
+          "type": {
+            "bool": true
+          }
+        },
+        "footer_text_bottom_underline": {
+          "type": {
+            "bool": true
+          }
+        },
+        "title_alignment": {
+          "type": {
+            "formatting": {
+              "alignment": true
+            }
+          }
+        },
+        "value_alignment": {
+          "type": {
+            "formatting": {
+              "alignment": true
+            }
+          }
+        },
+        "footer_text_top_alignment": {
+          "type": {
+            "formatting": {
+              "alignment": true
+            }
+          }
+        },
+        "footer_text_bottom_alignment": {
+          "type": {
+            "formatting": {
+              "alignment": true
+            }
+          }
+        }
+      }
+    },
+    "style": {
+      "properties": {
+        "primaryColour": {
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "secondaryColour": {
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "centerIconColour": {
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "bottomLeftIconColour": {
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "bottomLeftIcon": {
+          "type": {
+            "enumeration": []
+          }
+        },
+        "centerIcon": {
+          "type": {
+            "enumeration": []
+          }
+        },
+        "borderRadius": {
+          "type": { "numeric": true }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "table": {
+        "rows": {
+          "for": {
+            "in": "values"
+          }
+        }
+      }
+    }
+  ],
+  "privileges": []
+}

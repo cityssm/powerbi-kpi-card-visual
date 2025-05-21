@@ -1,0 +1,21 @@
+{
+  "visual": {
+    "name": "citySsmCard",
+    "displayName": "City of Sault Ste. Marie Card",
+    "guid": "citySsmCard45107A144E344891A4CEB01F0F40A156",
+    "visualClassName": "Visual",
+    "version": "1.0.0.0",
+    "description": "This card has a very specific use case for the City of SSM to make it easier for Staff to highlight KPI's",
+    "supportUrl": "https://github.com/jkahtava-cityssm/citySsmCard",
+    "gitHubUrl": "https://github.com/jkahtava-cityssm/citySsmCard"
+  },
+  "apiVersion": "5.3.0",
+  "author": { "name": "Jordan Kahtava", "email": "j.kahtava@cityssm.on.ca" },
+  "assets": { "icon": "assets/icon.png" },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": [],
+  "version": "1.0.0.0"
+}

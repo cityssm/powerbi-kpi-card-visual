@@ -80,7 +80,7 @@ export class Visual implements IVisual {
       this.header_content.className = "flex-container-header";
       //CREATE TEXT ELEMENT
       this.header_text = document.createElement("p");
-      this.header_text.innerText = "VALUE POSITION 1";
+      this.header_text.innerText = "";
       //APPEND ELEMENTS TO HEADER
       this.header_content.appendChild(this.header_text);
 
@@ -88,12 +88,12 @@ export class Visual implements IVisual {
         CREATE MIDDLE ELEMENTS
       ###########################################################*/
       this.middle_content_center_text = document.createElement("p");
-      this.middle_content_center_text.innerText = "VALUE POSITION 2";
+      this.middle_content_center_text.innerText = "";
 
       this.middle_content_center_icon = document.createElement("div");
       this.middle_content_center_icon.className = "middle-icon ";
 
-      this.swapSVGIcon("none", "#000000", this.middle_content_center_icon);
+      this.swapSVGIcon("loading", "#808080", this.middle_content_center_icon);
 
       this.middle_content_center = document.createElement("div");
       this.middle_content_center.className = "middle-content ";
@@ -120,7 +120,7 @@ export class Visual implements IVisual {
       //############### CREATE LEFT FOOTER SECTION ###############
       this.footer_content_left_icon = document.createElement("div");
       this.footer_content_left_icon.className = "footer-icon ";
-      this.swapSVGIcon("none", "#000000", this.footer_content_left_icon);
+      this.swapSVGIcon("loading", "#FFFFFF", this.footer_content_left_icon);
 
       this.footer_content_left = document.createElement("div");
       this.footer_content_left.className = "flex-item-left";
@@ -129,10 +129,10 @@ export class Visual implements IVisual {
       //############### CREATE RIGHT FOOTER SECTION ###############
       //TOP TEXT
       this.footer_content_right_text_top = document.createElement("p");
-      this.footer_content_right_text_top.innerText = "VALUE POSITION 3";
+      this.footer_content_right_text_top.innerText = "";
       //BOTTOM TEXT
       this.footer_content_right_text_bottom = document.createElement("p");
-      this.footer_content_right_text_bottom.innerText = "VALUE POSITION 4";
+      this.footer_content_right_text_bottom.innerText = "";
 
       //ATTACH TEXT TO CONTENT
       this.footer_content_right = document.createElement("div");
@@ -157,6 +157,80 @@ export class Visual implements IVisual {
 
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
+      //this.target.hidden = true;
+
+      /*###########################################################
+        SET DEFAULT COLOURS/LOADING
+      ###########################################################*/
+      this.main_content.style.borderColor = "#808080";
+      this.main_content.style.backgroundColor = "#808080";
+
+      this.header_middle_content.style.backgroundColor = "#E6E6E6";
+
+      this.middle_content_center_text.style.color = "#000000";
+      this.header_text.style.color = "#000000";
+      this.footer_content_right_text_top.style.color = "#FFFFFF";
+      this.footer_content_right_text_bottom.style.color = "#FFFFFF";
+
+      let width: number = options.element.clientWidth;
+      let height: number = options.element.clientHeight;
+
+      let padding: number = 5;
+
+      this.main_content.style.width = width - padding * 2 + "px";
+      this.main_content.style.height = height - padding + "px";
+
+      /*##################################################################
+      TITLE FONT DEFAULTS
+     ##################################################################*/
+
+      this.header_text.style.margin = "0px";
+      this.header_text.style.paddingTop = "5px";
+      this.header_text.style.fontFamily = "Arial";
+      this.header_text.style.fontSize = "21px";
+      this.header_text.style.fontStyle = "normal";
+      this.header_text.style.fontWeight = "bold";
+      this.header_text.style.textDecoration = "normal";
+
+      this.header_content.style.justifyContent = "center";
+      this.header_text.style.textAlign = "center";
+
+      /*##################################################################
+      VALUE FONT DEFAULTS
+     ##################################################################*/
+
+      this.middle_content_center_text.style.margin = "0px";
+      this.middle_content_center_text.style.fontFamily = "Arial";
+      this.middle_content_center_text.style.fontSize = "46px";
+      this.middle_content_center_text.style.fontStyle = "normal";
+      this.middle_content_center_text.style.fontWeight = "normal";
+      this.middle_content_center_text.style.textDecoration = "normal";
+
+      this.middle_content_center.style.float = "";
+
+      /*##################################################################
+      FOOTER TOP TEXT DEFAULTS
+     ##################################################################*/
+
+      this.footer_content_right_text_top.style.margin = "0px";
+      this.footer_content_right_text_top.style.fontFamily = "Arial";
+      this.footer_content_right_text_top.style.fontSize = "21px";
+      this.footer_content_right_text_top.style.fontStyle = "normal";
+      this.footer_content_right_text_top.style.fontWeight = "normal";
+      this.footer_content_right_text_top.style.textDecoration = "normal";
+      this.footer_content_right_text_top.style.textAlign = "left";
+
+      /*##################################################################
+      FOOTER BOTTOM TEXT DEFAULTS
+     ##################################################################*/
+
+      this.footer_content_right_text_bottom.style.margin = "0px";
+      this.footer_content_right_text_bottom.style.fontFamily = "Arial";
+      this.footer_content_right_text_bottom.style.fontSize = "21px";
+      this.footer_content_right_text_bottom.style.fontStyle = "normal";
+      this.footer_content_right_text_bottom.style.fontWeight = "normal";
+      this.footer_content_right_text_bottom.style.textDecoration = "normal";
+      this.footer_content_right_text_bottom.style.textAlign = "left";
 
       this.target.appendChild(this.main_content);
     }
@@ -167,6 +241,8 @@ export class Visual implements IVisual {
       VisualFormattingSettingsModel,
       options.dataViews[0]
     );
+
+    //this.target.hidden = false;
 
     const textCard = this.formattingSettings.textCard;
     const styleCard = this.formattingSettings.styleCard;
@@ -799,11 +875,22 @@ export class Visual implements IVisual {
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-yin-yang-icon lucide-yin-yang"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="7" r=".5"/><path d="M12 22a5 5 0 1 0 0-10 5 5 0 1 1 0-10"/><circle cx="12" cy="17" r=".5"/></svg>'
         );
       case "user":
-      default:
         return (
           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
           currentColor +
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+        );
+      case "loading":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>'
+        );
+      default:
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-circle-icon lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
         );
         break;
     }

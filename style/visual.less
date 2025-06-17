@@ -73,3 +73,14 @@
   padding: 10px;
   margin: auto;
 }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  transform-origin: center;
+  animation: spin 8s linear infinite;
+}

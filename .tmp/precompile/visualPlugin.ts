@@ -5,8 +5,8 @@ import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualC
 import DialogConstructorOptions = powerbiVisualsApi.extensibility.visual.DialogConstructorOptions;
 var powerbiKey: any = "powerbi";
 var powerbi: any = window[powerbiKey];
-var citySsmCard45107A144E344891A4CEB01F0F40A156: IVisualPlugin = {
-    name: 'citySsmCard45107A144E344891A4CEB01F0F40A156',
+var citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG: IVisualPlugin = {
+    name: 'citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG',
     displayName: 'City of Sault Ste. Marie Card',
     class: 'Visual',
     apiVersion: '5.3.0',
@@ -27,6 +27,6 @@ var citySsmCard45107A144E344891A4CEB01F0F40A156: IVisualPlugin = {
 if (typeof powerbi !== "undefined") {
     powerbi.visuals = powerbi.visuals || {};
     powerbi.visuals.plugins = powerbi.visuals.plugins || {};
-    powerbi.visuals.plugins["citySsmCard45107A144E344891A4CEB01F0F40A156"] = citySsmCard45107A144E344891A4CEB01F0F40A156;
+    powerbi.visuals.plugins["citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG"] = citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG;
 }
-export default citySsmCard45107A144E344891A4CEB01F0F40A156;
+export default citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG;

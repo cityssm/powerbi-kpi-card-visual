@@ -5,11 +5,8 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 export declare class Visual implements IVisual {
     private target;
-    private updateCount;
-    private textNode;
     private formattingSettings;
     private formattingSettingsService;
-    private host;
     private main_content;
     private header_middle_content;
     private header_content;
@@ -17,12 +14,10 @@ export declare class Visual implements IVisual {
     private middle_content;
     private middle_content_center;
     private middle_content_center_icon;
-    private middle_content_center_icon_svg;
     private middle_content_center_text;
     private footer_content;
     private footer_content_left;
     private footer_content_left_icon;
-    private footer_content_left_icon_svg;
     private footer_content_right;
     private footer_content_right_text_top;
     private footer_content_right_text_bottom;

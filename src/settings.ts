@@ -32,7 +32,7 @@ import FormattingSettingsCard = formattingSettings.SimpleCard;
 import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
 
-const positionOptions: powerbi.IEnumMember[] = [
+const iconList: powerbi.IEnumMember[] = [
   { value: "none", displayName: "Nothing/Transparent" },
   { value: "hide", displayName: "Hide Icons Formatting" },
   { value: "accessibility", displayName: "Accessibility" },
@@ -111,6 +111,16 @@ const positionOptions: powerbi.IEnumMember[] = [
   { value: "yin-yang", displayName: "Ying Yang" },
 ];
 
+const iconTrendList: powerbi.IEnumMember[] = [
+  { value: "arrow-#", displayName: "Arrow" },
+  { value: "move-#", displayName: "Arrow Narrow Tall" },
+  { value: "arrow-#-narrow-wide", displayName: "Arrow Narrow Steps" },
+  { value: "chevron-#", displayName: "Chevron" },
+  { value: "trending-#", displayName: "Trend" },
+  { value: "none", displayName: "Nothing/Transparent" },
+  { value: "hide", displayName: "Hide Trend Formatting" },
+];
+
 /**
  * Data Point Formatting Card
  */
@@ -146,15 +156,22 @@ class StyleCardSettings extends FormattingSettingsCard {
   centerIcon = new formattingSettings.ItemDropdown({
     name: "centerIcon",
     displayName: "Center Icon",
-    items: positionOptions,
-    value: positionOptions[0],
+    items: iconList,
+    value: iconList[0],
   });
 
   bottomLeftIcon = new formattingSettings.ItemDropdown({
     name: "bottomLeftIcon",
     displayName: "Bottom Left Icon",
-    items: positionOptions,
-    value: positionOptions[0],
+    items: iconList,
+    value: iconList[0],
+  });
+
+  trendIcon = new formattingSettings.ItemDropdown({
+    name: "trendIcon",
+    displayName: "Trend Icon",
+    items: iconTrendList,
+    value: iconTrendList[0],
   });
 
   borderRadius = new formattingSettings.Slider({
@@ -181,6 +198,7 @@ class StyleCardSettings extends FormattingSettingsCard {
     this.bottomLeftIconColour,
     this.centerIcon,
     this.bottomLeftIcon,
+    this.trendIcon,
     this.borderRadius,
   ];
 }

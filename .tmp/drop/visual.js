@@ -3,13 +3,358 @@ var citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG;
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 480:
+/***/ 165:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  let size = 0;
+  for (const node of this) ++size; // eslint-disable-line no-unused-vars
+  return size;
+}
+
+
+/***/ }),
+
+/***/ 183:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _selection_index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(selector) {
+  return typeof selector === "string"
+      ? new _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN([[document.querySelector(selector)]], [document.documentElement])
+      : new _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN([[selector]], _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .root */ .zr);
+}
+
+
+/***/ }),
+
+/***/ 202:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _window_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6747);
+
+
+function dispatchEvent(node, type, params) {
+  var window = (0,_window_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(node),
+      event = window.CustomEvent;
+
+  if (typeof event === "function") {
+    event = new event(type, params);
+  } else {
+    event = window.document.createEvent("Event");
+    if (params) event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail;
+    else event.initEvent(type, false, false);
+  }
+
+  node.dispatchEvent(event);
+}
+
+function dispatchConstant(type, params) {
+  return function() {
+    return dispatchEvent(this, type, params);
+  };
+}
+
+function dispatchFunction(type, params) {
+  return function() {
+    return dispatchEvent(this, type, params.apply(this, arguments));
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(type, params) {
+  return this.each((typeof params === "function"
+      ? dispatchFunction
+      : dispatchConstant)(type, params));
+}
+
+
+/***/ }),
+
+/***/ 461:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function propertyRemove(name) {
+  return function() {
+    delete this[name];
+  };
+}
+
+function propertyConstant(name, value) {
+  return function() {
+    this[name] = value;
+  };
+}
+
+function propertyFunction(name, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) delete this[name];
+    else this[name] = v;
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, value) {
+  return arguments.length > 1
+      ? this.each((value == null
+          ? propertyRemove : typeof value === "function"
+          ? propertyFunction
+          : propertyConstant)(name, value))
+      : this.node()[name];
+}
+
+
+/***/ }),
+
+/***/ 477:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   C: () => (/* binding */ createTooltipServiceWrapper)
+/* harmony export */ });
+/* unused harmony export TooltipServiceWrapper */
+/* harmony import */ var d3_selection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4984);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1191);
+
+
+function createTooltipServiceWrapper(tooltipService, rootElement, // this argument is deprecated and is optional now, just to maintain visuals with tooltiputils logic written for versions bellow 3.0.0
+handleTouchDelay = _constants__WEBPACK_IMPORTED_MODULE_0__/* .DefaultHandleTouchDelay */ .G) {
+    return new TooltipServiceWrapper({
+        tooltipService: tooltipService,
+        handleTouchDelay: handleTouchDelay,
+    });
+}
+class TooltipServiceWrapper {
+    constructor(options) {
+        this.visualHostTooltipService = options.tooltipService;
+        this.handleTouchDelay = options.handleTouchDelay;
+    }
+    addTooltip(selection, getTooltipInfoDelegate, getDataPointIdentity, reloadTooltipDataOnMouseMove) {
+        if (!selection || !this.visualHostTooltipService.enabled()) {
+            return;
+        }
+        const internalSelection = (0,d3_selection__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(selection.nodes());
+        const callTooltip = (func, event, tooltipInfo, selectionIds) => {
+            const coordinates = [event.clientX, event.clientY];
+            func.call(this.visualHostTooltipService, {
+                coordinates: coordinates,
+                isTouchEvent: event.pointerType === "touch",
+                dataItems: tooltipInfo,
+                identities: selectionIds
+            });
+        };
+        internalSelection.on("pointerover", (event, data) => {
+            const tooltipInfo = getTooltipInfoDelegate(data);
+            if (tooltipInfo == null) {
+                return;
+            }
+            const selectionIds = getDataPointIdentity ? [getDataPointIdentity(data)] : [];
+            if (event.pointerType === "mouse") {
+                callTooltip(this.visualHostTooltipService.show, event, tooltipInfo, selectionIds);
+            }
+            if (event.pointerType === "touch") {
+                this.handleTouchTimeoutId = window.setTimeout(() => {
+                    callTooltip(this.visualHostTooltipService.show, event, tooltipInfo, selectionIds);
+                    this.handleTouchTimeoutId = undefined;
+                }, this.handleTouchDelay);
+            }
+        });
+        internalSelection.on("pointerout", (event) => {
+            if (event.pointerType === "mouse") {
+                this.visualHostTooltipService.hide({
+                    isTouchEvent: false,
+                    immediately: false,
+                });
+            }
+            if (event.pointerType === "touch") {
+                this.cancelTouchTimeoutEvents();
+            }
+        });
+        internalSelection.on("pointermove", (event, data) => {
+            if (event.pointerType === "mouse") {
+                let tooltipInfo;
+                if (reloadTooltipDataOnMouseMove) {
+                    tooltipInfo = getTooltipInfoDelegate(data);
+                    if (tooltipInfo == null) {
+                        return;
+                    }
+                }
+                const selectionIds = getDataPointIdentity ? [getDataPointIdentity(data)] : [];
+                callTooltip(this.visualHostTooltipService.move, event, tooltipInfo, selectionIds);
+            }
+        });
+    }
+    cancelTouchTimeoutEvents() {
+        if (this.handleTouchTimeoutId) {
+            clearTimeout(this.handleTouchTimeoutId);
+        }
+    }
+    hide() {
+        this.visualHostTooltipService.hide({ immediately: true, isTouchEvent: false });
+    }
+}
+//# sourceMappingURL=tooltipService.js.map
+
+/***/ }),
+
+/***/ 574:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function none() {}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(selector) {
+  return selector == null ? none : function() {
+    return this.querySelector(selector);
+  };
+}
+
+
+/***/ }),
+
+/***/ 697:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function htmlRemove() {
+  this.innerHTML = "";
+}
+
+function htmlConstant(value) {
+  return function() {
+    this.innerHTML = value;
+  };
+}
+
+function htmlFunction(value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    this.innerHTML = v == null ? "" : v;
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(value) {
+  return arguments.length
+      ? this.each(value == null
+          ? htmlRemove : (typeof value === "function"
+          ? htmlFunction
+          : htmlConstant)(value))
+      : this.node().innerHTML;
+}
+
+
+/***/ }),
+
+/***/ 747:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function empty() {
+  return [];
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(selector) {
+  return selector == null ? empty : function() {
+    return this.querySelectorAll(selector);
+  };
+}
+
+
+/***/ }),
+
+/***/ 807:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return !this.node();
+}
+
+
+/***/ }),
+
+/***/ 1191:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   G: () => (/* binding */ DefaultHandleTouchDelay)
+/* harmony export */ });
+const DefaultHandleTouchDelay = 500;
+//# sourceMappingURL=constants.js.map
+
+/***/ }),
+
+/***/ 1322:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function* __WEBPACK_DEFAULT_EXPORT__() {
+  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+      if (node = group[i]) yield node;
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ 1429:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _creator_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3663);
+/* harmony import */ var _selector_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(574);
+
+
+
+function constantNull() {
+  return null;
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, before) {
+  var create = typeof name === "function" ? name : (0,_creator_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(name),
+      select = before == null ? constantNull : typeof before === "function" ? before : (0,_selector_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(before);
+  return this.select(function() {
+    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
+  });
+}
+
+
+/***/ }),
+
+/***/ 1480:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   S: () => (/* binding */ VisualFormattingSettingsModel)
 /* harmony export */ });
-/* harmony import */ var powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(674);
+/* harmony import */ var powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7674);
 /*
  *  Power BI Visualizations
  *
@@ -39,7 +384,7 @@ var citySsmCard45107A144E344891A4CEB01F0F40A156_DEBUG;
 
 var FormattingSettingsCard = powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.SimpleCard */ .z.Tn;
 var FormattingSettingsModel = powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.Model */ .z.Kx;
-const positionOptions = [
+const iconList = [
     { value: "none", displayName: "Nothing/Transparent" },
     { value: "hide", displayName: "Hide Icons Formatting" },
     { value: "accessibility", displayName: "Accessibility" },
@@ -117,6 +462,15 @@ const positionOptions = [
     { value: "waves", displayName: "Waves" },
     { value: "yin-yang", displayName: "Ying Yang" },
 ];
+const iconTrendList = [
+    { value: "arrow-#", displayName: "Arrow" },
+    { value: "move-#", displayName: "Arrow Narrow Tall" },
+    { value: "arrow-#-narrow-wide", displayName: "Arrow Narrow Steps" },
+    { value: "chevron-#", displayName: "Chevron" },
+    { value: "trending-#", displayName: "Trend" },
+    { value: "none", displayName: "Nothing/Transparent" },
+    { value: "hide", displayName: "Hide Trend Formatting" },
+];
 /**
  * Data Point Formatting Card
  */
@@ -147,14 +501,20 @@ class StyleCardSettings extends FormattingSettingsCard {
     centerIcon = new powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.ItemDropdown */ .z.PA({
         name: "centerIcon",
         displayName: "Center Icon",
-        items: positionOptions,
-        value: positionOptions[0],
+        items: iconList,
+        value: iconList[0],
     });
     bottomLeftIcon = new powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.ItemDropdown */ .z.PA({
         name: "bottomLeftIcon",
         displayName: "Bottom Left Icon",
-        items: positionOptions,
-        value: positionOptions[0],
+        items: iconList,
+        value: iconList[0],
+    });
+    trendIcon = new powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.ItemDropdown */ .z.PA({
+        name: "trendIcon",
+        displayName: "Trend Icon",
+        items: iconTrendList,
+        value: iconTrendList[0],
     });
     borderRadius = new powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .formattingSettings.Slider */ .z.Ap({
         name: "borderRadius",
@@ -179,6 +539,7 @@ class StyleCardSettings extends FormattingSettingsCard {
         this.bottomLeftIconColour,
         this.centerIcon,
         this.bottomLeftIcon,
+        this.trendIcon,
         this.borderRadius,
     ];
 }
@@ -350,62 +711,613 @@ class VisualFormattingSettingsModel extends FormattingSettingsModel {
 
 /***/ }),
 
-/***/ 639:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 1882:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   D: () => (/* binding */ getPropertyValue),
-/* harmony export */   y: () => (/* binding */ getDescriptor)
+/* harmony export */   LN: () => (/* binding */ Selection),
+/* harmony export */   zr: () => (/* binding */ root)
 /* harmony export */ });
-/**
- * Build and return formatting descriptor for simple slice
- *
- * @param objectName Object name from capabilities
- * @param slice formatting simple slice
- * @returns simple slice formatting descriptor
- */
-function getDescriptor(objectName, slice) {
-    return {
-        objectName: objectName,
-        propertyName: slice.name,
-        selector: slice.selector,
-        altConstantValueSelector: slice.altConstantSelector,
-        instanceKind: slice.instanceKind
-    };
+/* harmony import */ var _select_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7952);
+/* harmony import */ var _selectAll_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9713);
+/* harmony import */ var _selectChild_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7408);
+/* harmony import */ var _selectChildren_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(7867);
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9734);
+/* harmony import */ var _data_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(8664);
+/* harmony import */ var _enter_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4916);
+/* harmony import */ var _exit_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(2672);
+/* harmony import */ var _join_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(5232);
+/* harmony import */ var _merge_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(7610);
+/* harmony import */ var _order_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(4510);
+/* harmony import */ var _sort_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(2920);
+/* harmony import */ var _call_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(5152);
+/* harmony import */ var _nodes_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(3455);
+/* harmony import */ var _node_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(4784);
+/* harmony import */ var _size_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(165);
+/* harmony import */ var _empty_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(807);
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(2901);
+/* harmony import */ var _attr_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(7339);
+/* harmony import */ var _style_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(3683);
+/* harmony import */ var _property_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(461);
+/* harmony import */ var _classed_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(8235);
+/* harmony import */ var _text_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(7499);
+/* harmony import */ var _html_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(697);
+/* harmony import */ var _raise_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(2582);
+/* harmony import */ var _lower_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(9215);
+/* harmony import */ var _append_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(8072);
+/* harmony import */ var _insert_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(1429);
+/* harmony import */ var _remove_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(3900);
+/* harmony import */ var _clone_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(9063);
+/* harmony import */ var _datum_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(9433);
+/* harmony import */ var _on_js__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(5233);
+/* harmony import */ var _dispatch_js__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(202);
+/* harmony import */ var _iterator_js__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(1322);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var root = [null];
+
+function Selection(groups, parents) {
+  this._groups = groups;
+  this._parents = parents;
 }
-/**
- * Get property value from dataview objects if exists
- * Else return the default value from formatting settings object
- *
- * @param value dataview object value
- * @param defaultValue formatting settings default value
- * @returns formatting property value
- */
-function getPropertyValue(slice, value, defaultValue) {
-    if (value == null || (typeof value === "object" && !value.solid)) {
-        return defaultValue;
-    }
-    if (value.solid) {
-        return { value: value === null || value === void 0 ? void 0 : value.solid.color };
-    }
-    if ((slice === null || slice === void 0 ? void 0 : slice.type) === "Dropdown" /* visuals.FormattingComponent.Dropdown */ && slice.items) {
-        const itemsArray = slice.items;
-        return itemsArray.find(item => item.value == value);
-    }
-    return value;
+
+function selection() {
+  return new Selection([[document.documentElement]], root);
 }
-//# sourceMappingURL=FormattingSettingsUtils.js.map
+
+function selection_selection() {
+  return this;
+}
+
+Selection.prototype = selection.prototype = {
+  constructor: Selection,
+  select: _select_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A,
+  selectAll: _selectAll_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A,
+  selectChild: _selectChild_js__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .A,
+  selectChildren: _selectChildren_js__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A,
+  filter: _filter_js__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A,
+  data: _data_js__WEBPACK_IMPORTED_MODULE_5__/* ["default"] */ .A,
+  enter: _enter_js__WEBPACK_IMPORTED_MODULE_6__/* ["default"] */ .A,
+  exit: _exit_js__WEBPACK_IMPORTED_MODULE_7__/* ["default"] */ .A,
+  join: _join_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A,
+  merge: _merge_js__WEBPACK_IMPORTED_MODULE_9__/* ["default"] */ .A,
+  selection: selection_selection,
+  order: _order_js__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A,
+  sort: _sort_js__WEBPACK_IMPORTED_MODULE_11__/* ["default"] */ .A,
+  call: _call_js__WEBPACK_IMPORTED_MODULE_12__/* ["default"] */ .A,
+  nodes: _nodes_js__WEBPACK_IMPORTED_MODULE_13__/* ["default"] */ .A,
+  node: _node_js__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A,
+  size: _size_js__WEBPACK_IMPORTED_MODULE_15__/* ["default"] */ .A,
+  empty: _empty_js__WEBPACK_IMPORTED_MODULE_16__/* ["default"] */ .A,
+  each: _each_js__WEBPACK_IMPORTED_MODULE_17__/* ["default"] */ .A,
+  attr: _attr_js__WEBPACK_IMPORTED_MODULE_18__/* ["default"] */ .A,
+  style: _style_js__WEBPACK_IMPORTED_MODULE_19__/* ["default"] */ .A,
+  property: _property_js__WEBPACK_IMPORTED_MODULE_20__/* ["default"] */ .A,
+  classed: _classed_js__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A,
+  text: _text_js__WEBPACK_IMPORTED_MODULE_22__/* ["default"] */ .A,
+  html: _html_js__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A,
+  raise: _raise_js__WEBPACK_IMPORTED_MODULE_24__/* ["default"] */ .A,
+  lower: _lower_js__WEBPACK_IMPORTED_MODULE_25__/* ["default"] */ .A,
+  append: _append_js__WEBPACK_IMPORTED_MODULE_26__/* ["default"] */ .A,
+  insert: _insert_js__WEBPACK_IMPORTED_MODULE_27__/* ["default"] */ .A,
+  remove: _remove_js__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A,
+  clone: _clone_js__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A,
+  datum: _datum_js__WEBPACK_IMPORTED_MODULE_30__/* ["default"] */ .A,
+  on: _on_js__WEBPACK_IMPORTED_MODULE_31__/* ["default"] */ .A,
+  dispatch: _dispatch_js__WEBPACK_IMPORTED_MODULE_32__/* ["default"] */ .A,
+  [Symbol.iterator]: _iterator_js__WEBPACK_IMPORTED_MODULE_33__/* ["default"] */ .A
+};
+
+/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ((/* unused pure expression or super */ null && (selection)));
+
 
 /***/ }),
 
-/***/ 667:
+/***/ 2582:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function raise() {
+  if (this.nextSibling) this.parentNode.appendChild(this);
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return this.each(raise);
+}
+
+
+/***/ }),
+
+/***/ 2672:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _sparse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6732);
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return new _index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN(this._exit || this._groups.map(_sparse_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A), this._parents);
+}
+
+
+/***/ }),
+
+/***/ 2901:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(callback) {
+
+  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+      if (node = group[i]) callback.call(node, node.__data__, i, group);
+    }
+  }
+
+  return this;
+}
+
+
+/***/ }),
+
+/***/ 2920:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(compare) {
+  if (!compare) compare = ascending;
+
+  function compareNode(a, b) {
+    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
+  }
+
+  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
+      if (node = group[i]) {
+        sortgroup[i] = node;
+      }
+    }
+    sortgroup.sort(compareNode);
+  }
+
+  return new _index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN(sortgroups, this._parents).order();
+}
+
+function ascending(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+
+/***/ }),
+
+/***/ 3455:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return Array.from(this);
+}
+
+
+/***/ }),
+
+/***/ 3663:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _namespace_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7268);
+/* harmony import */ var _namespaces_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7947);
+
+
+
+function creatorInherit(name) {
+  return function() {
+    var document = this.ownerDocument,
+        uri = this.namespaceURI;
+    return uri === _namespaces_js__WEBPACK_IMPORTED_MODULE_0__/* .xhtml */ .g && document.documentElement.namespaceURI === _namespaces_js__WEBPACK_IMPORTED_MODULE_0__/* .xhtml */ .g
+        ? document.createElement(name)
+        : document.createElementNS(uri, name);
+  };
+}
+
+function creatorFixed(fullname) {
+  return function() {
+    return this.ownerDocument.createElementNS(fullname.space, fullname.local);
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name) {
+  var fullname = (0,_namespace_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(name);
+  return (fullname.local
+      ? creatorFixed
+      : creatorInherit)(fullname);
+}
+
+
+/***/ }),
+
+/***/ 3683:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* unused harmony export styleValue */
+/* harmony import */ var _window_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6747);
+
+
+function styleRemove(name) {
+  return function() {
+    this.style.removeProperty(name);
+  };
+}
+
+function styleConstant(name, value, priority) {
+  return function() {
+    this.style.setProperty(name, value, priority);
+  };
+}
+
+function styleFunction(name, value, priority) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.style.removeProperty(name);
+    else this.style.setProperty(name, v, priority);
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, value, priority) {
+  return arguments.length > 1
+      ? this.each((value == null
+            ? styleRemove : typeof value === "function"
+            ? styleFunction
+            : styleConstant)(name, value, priority == null ? "" : priority))
+      : styleValue(this.node(), name);
+}
+
+function styleValue(node, name) {
+  return node.style.getPropertyValue(name)
+      || (0,_window_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(node).getComputedStyle(node, null).getPropertyValue(name);
+}
+
+
+/***/ }),
+
+/***/ 3900:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function remove() {
+  var parent = this.parentNode;
+  if (parent) parent.removeChild(this);
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return this.each(remove);
+}
+
+
+/***/ }),
+
+/***/ 4510:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+
+  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
+    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
+      if (node = group[i]) {
+        if (next && node.compareDocumentPosition(next) ^ 4) next.parentNode.insertBefore(node, next);
+        next = node;
+      }
+    }
+  }
+
+  return this;
+}
+
+
+/***/ }),
+
+/***/ 4784:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+
+  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
+      var node = group[i];
+      if (node) return node;
+    }
+  }
+
+  return null;
+}
+
+
+/***/ }),
+
+/***/ 4916:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   L: () => (/* binding */ EnterNode)
+/* harmony export */ });
+/* harmony import */ var _sparse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6732);
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return new _index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN(this._enter || this._groups.map(_sparse_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A), this._parents);
+}
+
+function EnterNode(parent, datum) {
+  this.ownerDocument = parent.ownerDocument;
+  this.namespaceURI = parent.namespaceURI;
+  this._next = null;
+  this._parent = parent;
+  this.__data__ = datum;
+}
+
+EnterNode.prototype = {
+  constructor: EnterNode,
+  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+  querySelector: function(selector) { return this._parent.querySelector(selector); },
+  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+};
+
+
+/***/ }),
+
+/***/ 4984:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _array_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5478);
+/* harmony import */ var _selection_index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(selector) {
+  return typeof selector === "string"
+      ? new _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN([document.querySelectorAll(selector)], [document.documentElement])
+      : new _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN([(0,_array_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(selector)], _selection_index_js__WEBPACK_IMPORTED_MODULE_0__/* .root */ .zr);
+}
+
+
+/***/ }),
+
+/***/ 5152:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  var callback = arguments[0];
+  arguments[0] = this;
+  callback.apply(null, arguments);
+  return this;
+}
+
+
+/***/ }),
+
+/***/ 5232:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(onenter, onupdate, onexit) {
+  var enter = this.enter(), update = this, exit = this.exit();
+  if (typeof onenter === "function") {
+    enter = onenter(enter);
+    if (enter) enter = enter.selection();
+  } else {
+    enter = enter.append(onenter + "");
+  }
+  if (onupdate != null) {
+    update = onupdate(update);
+    if (update) update = update.selection();
+  }
+  if (onexit == null) exit.remove(); else onexit(exit);
+  return enter && update ? enter.merge(update).order() : update;
+}
+
+
+/***/ }),
+
+/***/ 5233:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function contextListener(listener) {
+  return function(event) {
+    listener.call(this, event, this.__data__);
+  };
+}
+
+function parseTypenames(typenames) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
+    return {type: t, name: name};
+  });
+}
+
+function onRemove(typename) {
+  return function() {
+    var on = this.__on;
+    if (!on) return;
+    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+        this.removeEventListener(o.type, o.listener, o.options);
+      } else {
+        on[++i] = o;
+      }
+    }
+    if (++i) on.length = i;
+    else delete this.__on;
+  };
+}
+
+function onAdd(typename, value, options) {
+  return function() {
+    var on = this.__on, o, listener = contextListener(value);
+    if (on) for (var j = 0, m = on.length; j < m; ++j) {
+      if ((o = on[j]).type === typename.type && o.name === typename.name) {
+        this.removeEventListener(o.type, o.listener, o.options);
+        this.addEventListener(o.type, o.listener = listener, o.options = options);
+        o.value = value;
+        return;
+      }
+    }
+    this.addEventListener(typename.type, listener, options);
+    o = {type: typename.type, name: typename.name, value: value, listener: listener, options: options};
+    if (!on) this.__on = [o];
+    else on.push(o);
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(typename, value, options) {
+  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+
+  if (arguments.length < 2) {
+    var on = this.node().__on;
+    if (on) for (var j = 0, m = on.length, o; j < m; ++j) {
+      for (i = 0, o = on[j]; i < n; ++i) {
+        if ((t = typenames[i]).type === o.type && t.name === o.name) {
+          return o.value;
+        }
+      }
+    }
+    return;
+  }
+
+  on = value ? onAdd : onRemove;
+  for (i = 0; i < n; ++i) this.each(on(typenames[i], value, options));
+  return this;
+}
+
+
+/***/ }),
+
+/***/ 5478:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* binding */ array)
+/* harmony export */ });
+// Given something array like (or null), returns something that is strictly an
+// array. This is used to ensure that array-like objects passed to d3.selectAll
+// or selection.selectAll are converted into proper arrays when creating a
+// selection; we don’t ever want to create a selection backed by a live
+// HTMLCollection or NodeList. However, note that selection.selectAll will use a
+// static NodeList as a group, since it safely derived from querySelectorAll.
+function array(x) {
+  return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
+}
+
+
+/***/ }),
+
+/***/ 6541:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   j: () => (/* binding */ childMatcher)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(selector) {
+  return function() {
+    return this.matches(selector);
+  };
+}
+
+function childMatcher(selector) {
+  return function(node) {
+    return node.matches(selector);
+  };
+}
+
+
+
+/***/ }),
+
+/***/ 6667:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   A: () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* unused harmony export FormattingSettingsService */
-/* harmony import */ var _FormattingSettingsComponents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(754);
+/* harmony import */ var _FormattingSettingsComponents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9754);
 
 class FormattingSettingsService {
     constructor(localizationManager) {
@@ -602,15 +1514,223 @@ class FormattingSettingsService {
 
 /***/ }),
 
-/***/ 674:
+/***/ 6732:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(update) {
+  return new Array(update.length);
+}
+
+
+/***/ }),
+
+/***/ 6747:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(node) {
+  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
+      || (node.document && node) // node is a Window
+      || node.defaultView; // node is a Document
+}
+
+
+/***/ }),
+
+/***/ 7268:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _namespaces_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7947);
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name) {
+  var prefix = name += "", i = prefix.indexOf(":");
+  if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
+  return _namespaces_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A.hasOwnProperty(prefix) ? {space: _namespaces_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A[prefix], local: name} : name; // eslint-disable-line no-prototype-builtins
+}
+
+
+/***/ }),
+
+/***/ 7339:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _namespace_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7268);
+
+
+function attrRemove(name) {
+  return function() {
+    this.removeAttribute(name);
+  };
+}
+
+function attrRemoveNS(fullname) {
+  return function() {
+    this.removeAttributeNS(fullname.space, fullname.local);
+  };
+}
+
+function attrConstant(name, value) {
+  return function() {
+    this.setAttribute(name, value);
+  };
+}
+
+function attrConstantNS(fullname, value) {
+  return function() {
+    this.setAttributeNS(fullname.space, fullname.local, value);
+  };
+}
+
+function attrFunction(name, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.removeAttribute(name);
+    else this.setAttribute(name, v);
+  };
+}
+
+function attrFunctionNS(fullname, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
+    else this.setAttributeNS(fullname.space, fullname.local, v);
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, value) {
+  var fullname = (0,_namespace_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(name);
+
+  if (arguments.length < 2) {
+    var node = this.node();
+    return fullname.local
+        ? node.getAttributeNS(fullname.space, fullname.local)
+        : node.getAttribute(fullname);
+  }
+
+  return this.each((value == null
+      ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
+      ? (fullname.local ? attrFunctionNS : attrFunction)
+      : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
+}
+
+
+/***/ }),
+
+/***/ 7408:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6541);
+
+
+var find = Array.prototype.find;
+
+function childFind(match) {
+  return function() {
+    return find.call(this.children, match);
+  };
+}
+
+function childFirst() {
+  return this.firstElementChild;
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(match) {
+  return this.select(match == null ? childFirst
+      : childFind(typeof match === "function" ? match : (0,_matcher_js__WEBPACK_IMPORTED_MODULE_0__/* .childMatcher */ .j)(match)));
+}
+
+
+/***/ }),
+
+/***/ 7499:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function textRemove() {
+  this.textContent = "";
+}
+
+function textConstant(value) {
+  return function() {
+    this.textContent = value;
+  };
+}
+
+function textFunction(value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    this.textContent = v == null ? "" : v;
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(value) {
+  return arguments.length
+      ? this.each(value == null
+          ? textRemove : (typeof value === "function"
+          ? textFunction
+          : textConstant)(value))
+      : this.node().textContent;
+}
+
+
+/***/ }),
+
+/***/ 7610:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1882);
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(context) {
+  var selection = context.selection ? context.selection() : context;
+
+  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
+      if (node = group0[i] || group1[i]) {
+        merge[i] = node;
+      }
+    }
+  }
+
+  for (; j < m0; ++j) {
+    merges[j] = groups0[j];
+  }
+
+  return new _index_js__WEBPACK_IMPORTED_MODULE_0__/* .Selection */ .LN(merges, this._parents);
+}
+
+
+/***/ }),
+
+/***/ 7674:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   O: () => (/* reexport safe */ _FormattingSettingsService__WEBPACK_IMPORTED_MODULE_1__.A),
 /* harmony export */   z: () => (/* reexport module object */ _FormattingSettingsComponents__WEBPACK_IMPORTED_MODULE_0__)
 /* harmony export */ });
-/* harmony import */ var _FormattingSettingsComponents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(754);
-/* harmony import */ var _FormattingSettingsService__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(667);
+/* harmony import */ var _FormattingSettingsComponents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9754);
+/* harmony import */ var _FormattingSettingsService__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6667);
 
 
 
@@ -618,344 +1738,387 @@ class FormattingSettingsService {
 
 /***/ }),
 
-/***/ 754:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 7867:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   $n: () => (/* binding */ AlignmentGroup),
-/* harmony export */   Ap: () => (/* binding */ Slider),
-/* harmony export */   Cx: () => (/* binding */ FontPicker),
-/* harmony export */   Kx: () => (/* binding */ Model),
-/* harmony export */   PA: () => (/* binding */ ItemDropdown),
-/* harmony export */   St: () => (/* binding */ CompositeCard),
-/* harmony export */   Tn: () => (/* binding */ SimpleCard),
-/* harmony export */   iB: () => (/* binding */ NumUpDown),
-/* harmony export */   jF: () => (/* binding */ ToggleSwitch),
-/* harmony export */   sk: () => (/* binding */ ColorPicker),
-/* harmony export */   tc: () => (/* binding */ FontControl)
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* unused harmony exports CardGroupEntity, Group, SimpleSlice, DatePicker, AutoDropdown, DurationPicker, ErrorRangeControl, FieldPicker, ItemFlagsSelection, AutoFlagsSelection, TextInput, TextArea, GradientBar, ImageUpload, ListEditor, ReadOnlyText, ShapeMapSelector, CompositeSlice, MarginPadding, Container, ContainerItem */
-/* harmony import */ var _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(639);
-/**
- * Powerbi utils components classes for custom visual formatting pane objects
- *
- */
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6541);
 
-class NamedEntity {
+
+var filter = Array.prototype.filter;
+
+function children() {
+  return Array.from(this.children);
 }
-class CardGroupEntity extends NamedEntity {
+
+function childrenFilter(match) {
+  return function() {
+    return filter.call(this.children, match);
+  };
 }
-class Model {
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(match) {
+  return this.selectAll(match == null ? children
+      : childrenFilter(typeof match === "function" ? match : (0,_matcher_js__WEBPACK_IMPORTED_MODULE_0__/* .childMatcher */ .j)(match)));
 }
-/** CompositeCard is use to populate a card into the formatting pane with multiple groups */
-class CompositeCard extends NamedEntity {
-}
-class Group extends CardGroupEntity {
-    constructor(object) {
-        super();
-        Object.assign(this, object);
-    }
-}
-/** SimpleCard is use to populate a card into the formatting pane in a single group */
-class SimpleCard extends CardGroupEntity {
-}
-class SimpleSlice extends NamedEntity {
-    constructor(object) {
-        super();
-        Object.assign(this, object);
-    }
-    getFormattingSlice(objectName, localizationManager) {
-        const controlType = this.type;
-        const propertyName = this.name;
-        const sliceDisplayName = (localizationManager && this.displayNameKey) ? localizationManager.getDisplayName(this.displayNameKey) : this.displayName;
-        const sliceDescription = (localizationManager && this.descriptionKey) ? localizationManager.getDisplayName(this.descriptionKey) : this.description;
-        const componentDisplayName = {
-            displayName: sliceDisplayName,
-            description: sliceDescription,
-            uid: objectName + '-' + propertyName,
-        };
-        return Object.assign(Object.assign({}, componentDisplayName), { control: {
-                type: controlType,
-                properties: this.getFormattingComponent(objectName, localizationManager)
-            } });
-    }
-    // eslint-disable-next-line
-    getFormattingComponent(objectName, localizationManager) {
-        return {
-            descriptor: _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__/* .getDescriptor */ .y(objectName, this),
-            value: this.value,
-        };
-    }
-    getRevertToDefaultDescriptor(objectName) {
-        return [{
-                objectName: objectName,
-                propertyName: this.name
-            }];
-    }
-    setPropertiesValues(dataViewObjects, objectName) {
-        var _a;
-        const newValue = (_a = dataViewObjects === null || dataViewObjects === void 0 ? void 0 : dataViewObjects[objectName]) === null || _a === void 0 ? void 0 : _a[this.name];
-        this.value = _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__/* .getPropertyValue */ .D(this, newValue, this.value);
-    }
-}
-class AlignmentGroup extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "AlignmentGroup" /* visuals.FormattingComponent.AlignmentGroup */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { mode: this.mode, supportsNoSelection: this.supportsNoSelection });
-    }
-}
-class ToggleSwitch extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "ToggleSwitch" /* visuals.FormattingComponent.ToggleSwitch */;
-    }
-}
-class ColorPicker extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "ColorPicker" /* visuals.FormattingComponent.ColorPicker */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { defaultColor: this.defaultColor, isNoFillItemSupported: this.isNoFillItemSupported });
-    }
-}
-class NumUpDown extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "NumUpDown" /* visuals.FormattingComponent.NumUpDown */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { options: this.options });
-    }
-}
-class Slider extends NumUpDown {
-    constructor() {
-        super(...arguments);
-        this.type = "Slider" /* visuals.FormattingComponent.Slider */;
-    }
-}
-class DatePicker extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "DatePicker" /* visuals.FormattingComponent.DatePicker */;
-    }
-    getFormattingComponent(objectName, localizationManager) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { placeholder: (localizationManager && this.placeholderKey) ? localizationManager.getDisplayName(this.placeholderKey) : this.placeholder, validators: this.validators });
-    }
-}
-class ItemDropdown extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "Dropdown" /* visuals.FormattingComponent.Dropdown */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { items: this.items });
-    }
-}
-class AutoDropdown extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "Dropdown" /* visuals.FormattingComponent.Dropdown */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { mergeValues: this.mergeValues, filterValues: this.filterValues });
-    }
-}
-class DurationPicker extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "DurationPicker" /* visuals.FormattingComponent.DurationPicker */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators });
-    }
-}
-class ErrorRangeControl extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "ErrorRangeControl" /* visuals.FormattingComponent.ErrorRangeControl */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators });
-    }
-}
-class FieldPicker extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "FieldPicker" /* visuals.FormattingComponent.FieldPicker */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators, allowMultipleValues: this.allowMultipleValues });
-    }
-}
-class ItemFlagsSelection extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "FlagsSelection" /* visuals.FormattingComponent.FlagsSelection */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { items: this.items });
-    }
-}
-class AutoFlagsSelection extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "FlagsSelection" /* visuals.FormattingComponent.FlagsSelection */;
-    }
-}
-class TextInput extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "TextInput" /* visuals.FormattingComponent.TextInput */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { placeholder: this.placeholder });
-    }
-}
-class TextArea extends TextInput {
-    constructor() {
-        super(...arguments);
-        this.type = "TextArea" /* visuals.FormattingComponent.TextArea */;
-    }
-}
-class FontPicker extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "FontPicker" /* visuals.FormattingComponent.FontPicker */;
-    }
-}
-class GradientBar extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "GradientBar" /* visuals.FormattingComponent.GradientBar */;
-    }
-}
-class ImageUpload extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "ImageUpload" /* visuals.FormattingComponent.ImageUpload */;
-    }
-}
-class ListEditor extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "ListEditor" /* visuals.FormattingComponent.ListEditor */;
-    }
-}
-class ReadOnlyText extends SimpleSlice {
-    constructor() {
-        super(...arguments);
-        this.type = "ReadOnlyText" /* visuals.FormattingComponent.ReadOnlyText */;
-    }
-}
-class ShapeMapSelector extends SimpleSlice {
-    constructor(object) {
-        super(object);
-        this.type = "ShapeMapSelector" /* visuals.FormattingComponent.ShapeMapSelector */;
-    }
-    getFormattingComponent(objectName) {
-        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { isAzMapReferenceSelector: this.isAzMapReferenceSelector });
-    }
-}
-class CompositeSlice extends NamedEntity {
-    constructor(object) {
-        super();
-        Object.assign(this, object);
-    }
-    getFormattingSlice(objectName, localizationManager) {
-        const controlType = this.type;
-        const propertyName = this.name;
-        const componentDisplayName = {
-            displayName: (localizationManager && this.displayNameKey) ? localizationManager.getDisplayName(this.displayNameKey) : this.displayName,
-            description: (localizationManager && this.descriptionKey) ? localizationManager.getDisplayName(this.descriptionKey) : this.description,
-            uid: objectName + '-' + propertyName,
-        };
-        return Object.assign(Object.assign({}, componentDisplayName), { control: {
-                type: controlType,
-                properties: this.getFormattingComponent(objectName)
-            } });
-    }
-}
-class FontControl extends CompositeSlice {
-    constructor(object) {
-        super(object);
-        this.type = "FontControl" /* visuals.FormattingComponent.FontControl */;
-    }
-    getFormattingComponent(objectName) {
-        var _a, _b, _c;
-        return {
-            fontFamily: this.fontFamily.getFormattingComponent(objectName),
-            fontSize: this.fontSize.getFormattingComponent(objectName),
-            bold: (_a = this.bold) === null || _a === void 0 ? void 0 : _a.getFormattingComponent(objectName),
-            italic: (_b = this.italic) === null || _b === void 0 ? void 0 : _b.getFormattingComponent(objectName),
-            underline: (_c = this.underline) === null || _c === void 0 ? void 0 : _c.getFormattingComponent(objectName)
-        };
-    }
-    getRevertToDefaultDescriptor(objectName) {
-        return this.fontFamily.getRevertToDefaultDescriptor(objectName)
-            .concat(this.fontSize.getRevertToDefaultDescriptor(objectName))
-            .concat(this.bold ? this.bold.getRevertToDefaultDescriptor(objectName) : [])
-            .concat(this.italic ? this.italic.getRevertToDefaultDescriptor(objectName) : [])
-            .concat(this.underline ? this.underline.getRevertToDefaultDescriptor(objectName) : []);
-    }
-    setPropertiesValues(dataViewObjects, objectName) {
-        var _a, _b, _c;
-        this.fontFamily.setPropertiesValues(dataViewObjects, objectName);
-        this.fontSize.setPropertiesValues(dataViewObjects, objectName);
-        (_a = this.bold) === null || _a === void 0 ? void 0 : _a.setPropertiesValues(dataViewObjects, objectName);
-        (_b = this.italic) === null || _b === void 0 ? void 0 : _b.setPropertiesValues(dataViewObjects, objectName);
-        (_c = this.underline) === null || _c === void 0 ? void 0 : _c.setPropertiesValues(dataViewObjects, objectName);
-    }
-}
-class MarginPadding extends CompositeSlice {
-    constructor(object) {
-        super(object);
-        this.type = "MarginPadding" /* visuals.FormattingComponent.MarginPadding */;
-    }
-    getFormattingComponent(objectName) {
-        return {
-            left: this.left.getFormattingComponent(objectName),
-            right: this.right.getFormattingComponent(objectName),
-            top: this.top.getFormattingComponent(objectName),
-            bottom: this.bottom.getFormattingComponent(objectName)
-        };
-    }
-    getRevertToDefaultDescriptor(objectName) {
-        return this.left.getRevertToDefaultDescriptor(objectName)
-            .concat(this.right.getRevertToDefaultDescriptor(objectName))
-            .concat(this.top.getRevertToDefaultDescriptor(objectName))
-            .concat(this.bottom.getRevertToDefaultDescriptor(objectName));
-    }
-    setPropertiesValues(dataViewObjects, objectName) {
-        this.left.setPropertiesValues(dataViewObjects, objectName);
-        this.right.setPropertiesValues(dataViewObjects, objectName);
-        this.top.setPropertiesValues(dataViewObjects, objectName);
-        this.bottom.setPropertiesValues(dataViewObjects, objectName);
-    }
-}
-class Container extends NamedEntity {
-    constructor(object) {
-        super();
-        Object.assign(this, object);
-    }
-}
-class ContainerItem extends (/* unused pure expression or super */ null && (NamedEntity)) {
-}
-//# sourceMappingURL=FormattingSettingsComponents.js.map
+
 
 /***/ }),
 
-/***/ 849:
+/***/ 7947:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   g: () => (/* binding */ xhtml)
+/* harmony export */ });
+var xhtml = "http://www.w3.org/1999/xhtml";
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  svg: "http://www.w3.org/2000/svg",
+  xhtml: xhtml,
+  xlink: "http://www.w3.org/1999/xlink",
+  xml: "http://www.w3.org/XML/1998/namespace",
+  xmlns: "http://www.w3.org/2000/xmlns/"
+});
+
+
+/***/ }),
+
+/***/ 7952:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1882);
+/* harmony import */ var _selector_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(574);
+
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(select) {
+  if (typeof select !== "function") select = (0,_selector_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(select);
+
+  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+        if ("__data__" in node) subnode.__data__ = node.__data__;
+        subgroup[i] = subnode;
+      }
+    }
+  }
+
+  return new _index_js__WEBPACK_IMPORTED_MODULE_1__/* .Selection */ .LN(subgroups, this._parents);
+}
+
+
+/***/ }),
+
+/***/ 8072:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _creator_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3663);
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name) {
+  var create = typeof name === "function" ? name : (0,_creator_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(name);
+  return this.select(function() {
+    return this.appendChild(create.apply(this, arguments));
+  });
+}
+
+
+/***/ }),
+
+/***/ 8235:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function classArray(string) {
+  return string.trim().split(/^|\s+/);
+}
+
+function classList(node) {
+  return node.classList || new ClassList(node);
+}
+
+function ClassList(node) {
+  this._node = node;
+  this._names = classArray(node.getAttribute("class") || "");
+}
+
+ClassList.prototype = {
+  add: function(name) {
+    var i = this._names.indexOf(name);
+    if (i < 0) {
+      this._names.push(name);
+      this._node.setAttribute("class", this._names.join(" "));
+    }
+  },
+  remove: function(name) {
+    var i = this._names.indexOf(name);
+    if (i >= 0) {
+      this._names.splice(i, 1);
+      this._node.setAttribute("class", this._names.join(" "));
+    }
+  },
+  contains: function(name) {
+    return this._names.indexOf(name) >= 0;
+  }
+};
+
+function classedAdd(node, names) {
+  var list = classList(node), i = -1, n = names.length;
+  while (++i < n) list.add(names[i]);
+}
+
+function classedRemove(node, names) {
+  var list = classList(node), i = -1, n = names.length;
+  while (++i < n) list.remove(names[i]);
+}
+
+function classedTrue(names) {
+  return function() {
+    classedAdd(this, names);
+  };
+}
+
+function classedFalse(names) {
+  return function() {
+    classedRemove(this, names);
+  };
+}
+
+function classedFunction(names, value) {
+  return function() {
+    (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, value) {
+  var names = classArray(name + "");
+
+  if (arguments.length < 2) {
+    var list = classList(this.node()), i = -1, n = names.length;
+    while (++i < n) if (!list.contains(names[i])) return false;
+    return true;
+  }
+
+  return this.each((typeof value === "function"
+      ? classedFunction : value
+      ? classedTrue
+      : classedFalse)(names, value));
+}
+
+
+/***/ }),
+
+/***/ 8639:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   D: () => (/* binding */ getPropertyValue),
+/* harmony export */   y: () => (/* binding */ getDescriptor)
+/* harmony export */ });
+/**
+ * Build and return formatting descriptor for simple slice
+ *
+ * @param objectName Object name from capabilities
+ * @param slice formatting simple slice
+ * @returns simple slice formatting descriptor
+ */
+function getDescriptor(objectName, slice) {
+    return {
+        objectName: objectName,
+        propertyName: slice.name,
+        selector: slice.selector,
+        altConstantValueSelector: slice.altConstantSelector,
+        instanceKind: slice.instanceKind
+    };
+}
+/**
+ * Get property value from dataview objects if exists
+ * Else return the default value from formatting settings object
+ *
+ * @param value dataview object value
+ * @param defaultValue formatting settings default value
+ * @returns formatting property value
+ */
+function getPropertyValue(slice, value, defaultValue) {
+    if (value == null || (typeof value === "object" && !value.solid)) {
+        return defaultValue;
+    }
+    if (value.solid) {
+        return { value: value === null || value === void 0 ? void 0 : value.solid.color };
+    }
+    if ((slice === null || slice === void 0 ? void 0 : slice.type) === "Dropdown" /* visuals.FormattingComponent.Dropdown */ && slice.items) {
+        const itemsArray = slice.items;
+        return itemsArray.find(item => item.value == value);
+    }
+    return value;
+}
+//# sourceMappingURL=FormattingSettingsUtils.js.map
+
+/***/ }),
+
+/***/ 8664:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1882);
+/* harmony import */ var _enter_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4916);
+/* harmony import */ var _constant_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9731);
+
+
+
+
+function bindIndex(parent, group, enter, update, exit, data) {
+  var i = 0,
+      node,
+      groupLength = group.length,
+      dataLength = data.length;
+
+  // Put any non-null nodes that fit into update.
+  // Put any null nodes into enter.
+  // Put any remaining data into enter.
+  for (; i < dataLength; ++i) {
+    if (node = group[i]) {
+      node.__data__ = data[i];
+      update[i] = node;
+    } else {
+      enter[i] = new _enter_js__WEBPACK_IMPORTED_MODULE_0__/* .EnterNode */ .L(parent, data[i]);
+    }
+  }
+
+  // Put any non-null nodes that don’t fit into exit.
+  for (; i < groupLength; ++i) {
+    if (node = group[i]) {
+      exit[i] = node;
+    }
+  }
+}
+
+function bindKey(parent, group, enter, update, exit, data, key) {
+  var i,
+      node,
+      nodeByKeyValue = new Map,
+      groupLength = group.length,
+      dataLength = data.length,
+      keyValues = new Array(groupLength),
+      keyValue;
+
+  // Compute the key for each node.
+  // If multiple nodes have the same key, the duplicates are added to exit.
+  for (i = 0; i < groupLength; ++i) {
+    if (node = group[i]) {
+      keyValues[i] = keyValue = key.call(node, node.__data__, i, group) + "";
+      if (nodeByKeyValue.has(keyValue)) {
+        exit[i] = node;
+      } else {
+        nodeByKeyValue.set(keyValue, node);
+      }
+    }
+  }
+
+  // Compute the key for each datum.
+  // If there a node associated with this key, join and add it to update.
+  // If there is not (or the key is a duplicate), add it to enter.
+  for (i = 0; i < dataLength; ++i) {
+    keyValue = key.call(parent, data[i], i, data) + "";
+    if (node = nodeByKeyValue.get(keyValue)) {
+      update[i] = node;
+      node.__data__ = data[i];
+      nodeByKeyValue.delete(keyValue);
+    } else {
+      enter[i] = new _enter_js__WEBPACK_IMPORTED_MODULE_0__/* .EnterNode */ .L(parent, data[i]);
+    }
+  }
+
+  // Add any remaining nodes that were not bound to data to exit.
+  for (i = 0; i < groupLength; ++i) {
+    if ((node = group[i]) && (nodeByKeyValue.get(keyValues[i]) === node)) {
+      exit[i] = node;
+    }
+  }
+}
+
+function datum(node) {
+  return node.__data__;
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(value, key) {
+  if (!arguments.length) return Array.from(this, datum);
+
+  var bind = key ? bindKey : bindIndex,
+      parents = this._parents,
+      groups = this._groups;
+
+  if (typeof value !== "function") value = (0,_constant_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(value);
+
+  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
+    var parent = parents[j],
+        group = groups[j],
+        groupLength = group.length,
+        data = arraylike(value.call(parent, parent && parent.__data__, j, parents)),
+        dataLength = data.length,
+        enterGroup = enter[j] = new Array(dataLength),
+        updateGroup = update[j] = new Array(dataLength),
+        exitGroup = exit[j] = new Array(groupLength);
+
+    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
+
+    // Now connect the enter nodes to their following update node, such that
+    // appendChild can insert the materialized enter node before this node,
+    // rather than at the end of the parent node.
+    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
+      if (previous = enterGroup[i0]) {
+        if (i0 >= i1) i1 = i0 + 1;
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength);
+        previous._next = next || null;
+      }
+    }
+  }
+
+  update = new _index_js__WEBPACK_IMPORTED_MODULE_2__/* .Selection */ .LN(update, parents);
+  update._enter = enter;
+  update._exit = exit;
+  return update;
+}
+
+// Given some data, this returns an array-like view of it: an object that
+// exposes a length property and allows numeric indexing. Note that unlike
+// selectAll, this isn’t worried about “live” collections because the resulting
+// array will only be used briefly while data is being bound. (It is possible to
+// cause the data to change while iterating by using a key function, but please
+// don’t; we’d rather avoid a gratuitous copy.)
+function arraylike(data) {
+  return typeof data === "object" && "length" in data
+    ? data // Array, TypedArray, NodeList, array-like
+    : Array.from(data); // Map, Set, iterable, string, or anything else
+}
+
+
+/***/ }),
+
+/***/ 8849:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   b: () => (/* binding */ Visual)
 /* harmony export */ });
-/* harmony import */ var powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(674);
-/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(480);
+/* harmony import */ var powerbi_visuals_utils_tooltiputils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(477);
+/* harmony import */ var d3_selection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(183);
+/* harmony import */ var powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7674);
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1480);
 /*
  *  Power BI Visual CLI
  *
@@ -985,6 +2148,8 @@ class ContainerItem extends (/* unused pure expression or super */ null && (Name
 
 
 
+
+
 class Visual {
     target;
     formattingSettings;
@@ -993,19 +2158,25 @@ class Visual {
     header_middle_content;
     header_content;
     header_text;
+    header_text_icon;
     middle_content;
     middle_content_center;
     middle_content_center_icon;
     middle_content_center_text;
+    middle_content_center_trend;
+    middle_content_center_trend_icon;
+    middle_content_center_trend_text;
     footer_content;
     footer_content_left;
     footer_content_left_icon;
     footer_content_right;
     footer_content_right_text_top;
     footer_content_right_text_bottom;
+    tooltipServiceWrapper;
     constructor(options) {
         this.formattingSettingsService = new powerbi_visuals_utils_formattingmodel__WEBPACK_IMPORTED_MODULE_0__/* .FormattingSettingsService */ .O();
         this.target = options.element;
+        this.tooltipServiceWrapper = (0,powerbi_visuals_utils_tooltiputils__WEBPACK_IMPORTED_MODULE_2__/* .createTooltipServiceWrapper */ .C)(options.host.tooltipService, options.element);
         if (document) {
             /*###########################################################
               CREATE HEADER ELEMENTS
@@ -1015,20 +2186,42 @@ class Visual {
             //CREATE TEXT ELEMENT
             this.header_text = document.createElement("p");
             this.header_text.innerText = "";
+            this.header_text_icon = document.createElement("div");
+            this.header_text_icon.className = "header-icon ";
+            this.swapSVGIcon("info", "#808080", this.header_text_icon);
             //APPEND ELEMENTS TO HEADER
+            this.header_content.appendChild(this.header_text_icon);
             this.header_content.appendChild(this.header_text);
             /*###########################################################
-              CREATE MIDDLE ELEMENTS
+              CREATE MIDDLE ICON AND VALUE TEXT
             ###########################################################*/
             this.middle_content_center_text = document.createElement("p");
             this.middle_content_center_text.innerText = "";
             this.middle_content_center_icon = document.createElement("div");
             this.middle_content_center_icon.className = "middle-icon ";
             this.swapSVGIcon("loading", "#808080", this.middle_content_center_icon);
+            /*######################
+              CREATE MIDDLE TREND LINE
+            ########################*/
+            this.middle_content_center_trend_icon = document.createElement("div");
+            this.middle_content_center_trend_icon.className = "middle-trend-icon";
+            this.swapSVGIcon("arrow-up", "#4CBB17", this.middle_content_center_trend_icon);
+            this.swapSVGIcon("arrow-up", "#ED1C24", this.middle_content_center_trend_icon);
+            //#ED1C24
+            this.middle_content_center_trend_text = document.createElement("p");
+            this.middle_content_center_trend_text.innerText = "-2.57%";
+            this.middle_content_center_trend = document.createElement("div");
+            this.middle_content_center_trend.className = "flex-container-header";
+            this.middle_content_center_trend.appendChild(this.middle_content_center_trend_text);
+            this.middle_content_center_trend.appendChild(this.middle_content_center_trend_icon);
+            /*######################
+              ATTACH MIDDLE COMPONENTS
+            ########################*/
             this.middle_content_center = document.createElement("div");
             this.middle_content_center.className = "middle-content ";
             this.middle_content_center.appendChild(this.middle_content_center_icon);
             this.middle_content_center.appendChild(this.middle_content_center_text);
+            this.middle_content_center.appendChild(this.middle_content_center_trend);
             this.middle_content = document.createElement("div");
             this.middle_content.className = "flex-container-middle";
             this.middle_content.appendChild(this.middle_content_center);
@@ -1113,6 +2306,15 @@ class Visual {
             this.middle_content_center_text.style.textDecoration = "normal";
             this.middle_content_center.style.float = "";
             /*##################################################################
+            TREND FONT DEFAULTS
+           ##################################################################*/
+            this.middle_content_center_trend_text.style.margin = "0px";
+            this.middle_content_center_trend_text.style.fontFamily = "Arial";
+            this.middle_content_center_trend_text.style.fontSize = "21px";
+            this.middle_content_center_trend_text.style.fontStyle = "normal";
+            this.middle_content_center_trend_text.style.fontWeight = "normal";
+            this.middle_content_center_trend_text.style.textDecoration = "normal";
+            /*##################################################################
             FOOTER TOP TEXT DEFAULTS
            ##################################################################*/
             this.footer_content_right_text_top.style.margin = "0px";
@@ -1154,6 +2356,8 @@ class Visual {
         const secondaryColour = styleCard.secondaryColour.value.value;
         const centerIconColour = styleCard.centerIconColour.value.value;
         const bottomIconColour = styleCard.bottomLeftIconColour.value.value;
+        const trendUpColour = "#4CBB17";
+        const trendDownColour = "#ED1C24";
         this.main_content.style.borderColor = primaryColour;
         this.main_content.style.backgroundColor = primaryColour;
         this.header_middle_content.style.backgroundColor = secondaryColour;
@@ -1167,11 +2371,16 @@ class Visual {
         const borderRadius = styleCard.borderRadius.value + "px";
         this.header_middle_content.style.borderRadius = borderRadius;
         this.main_content.style.borderRadius = borderRadius;
+        if (styleCard.borderRadius.value >= 20) {
+            const newPadding = styleCard.borderRadius.value - 10;
+            this.header_text_icon.style.paddingRight = newPadding + "px";
+        }
         /*##################################################################
           SET ICONS
          ##################################################################*/
         const bottomIconSelected = styleCard.bottomLeftIcon.value.value;
         const middleIconSelected = styleCard.centerIcon.value.value;
+        const trendIconSelected = styleCard.trendIcon.value.value;
         if (middleIconSelected === "hide") {
             this.middle_content_center_icon.hidden = true;
         }
@@ -1186,6 +2395,7 @@ class Visual {
             this.footer_content_left.hidden = false;
             this.swapSVGIcon(bottomIconSelected, bottomIconColour, this.footer_content_left_icon);
         }
+        this.swapSVGIcon("info", primaryColour, this.header_text_icon);
         /*##################################################################
           TITLE FONT DETAILS
          ##################################################################*/
@@ -1253,19 +2463,83 @@ class Visual {
         this.footer_content_right_text_bottom.style.textDecoration = footerTextBottomUnderlined ? "underline" : "normal";
         this.footer_content_right_text_bottom.style.textAlign = footerTextBottomAlignment;
         const tableDataView = options.dataViews[0].table;
-        const firstRow = options.dataViews[0].table?.rows[0];
-        if (this.header_text && firstRow && firstRow.length > 0) {
-            this.header_text.textContent = tableDataView.rows[0][0].toString();
+        //verify that atleast one row exists otherwise we will get some runtime errors.
+        //POSITION 1: HEADING
+        //POSITION 2: CENTER VALUE
+        //POSITION 3: FOOTER TOP TEXT
+        //POSITION 4: FOOTER BOTTOM TEXT
+        //POSITION 5: INCREASE/DECREASE
+        //POSITION 6: INFO DESCRIPTION
+        //POSITION 7: ACCESSIBILITY
+        this.toggleParagraphElement(tableDataView, 0, this.header_text);
+        this.toggleParagraphElement(tableDataView, 1, this.middle_content_center_text);
+        this.toggleParagraphElement(tableDataView, 2, this.footer_content_right_text_top);
+        this.toggleParagraphElement(tableDataView, 3, this.footer_content_right_text_bottom);
+        this.toggleTrendElement(tableDataView, 4, this.middle_content_center_trend, this.middle_content_center_trend_text, this.middle_content_center_trend_icon, trendIconSelected, trendUpColour, trendDownColour);
+        /*##################################################################
+          TOOLTIP SETTINGS
+         ##################################################################*/
+        this.setTooltip(tableDataView, 5, this.header_text_icon, 0);
+        /*##################################################################
+          TREND SETTINGS
+         ##################################################################*/
+    }
+    getData(tableDataView, position) {
+        const tableRow = tableDataView?.rows[0];
+        if (tableRow && tableRow.length > position) {
+            return tableDataView.rows[0][position].toString();
         }
-        if (this.middle_content_center_text && firstRow && firstRow.length > 1) {
-            this.middle_content_center_text.textContent = tableDataView.rows[0][1].toString();
+        return "";
+    }
+    toggleParagraphElement(tableDataView, position, element) {
+        if (element) {
+            element.textContent = this.getData(tableDataView, position);
         }
-        if (this.footer_content_right_text_top && firstRow && firstRow.length > 2) {
-            this.footer_content_right_text_top.textContent = tableDataView.rows[0][2].toString();
+    }
+    toggleTrendElement(tableDataView, position, containingElement, textElement, iconElement, trendIconSelected, trendUpColour, trendDownColour) {
+        const textValue = this.getData(tableDataView, position);
+        textElement.textContent = textValue;
+        if (textValue === "") {
+            return;
         }
-        if (this.footer_content_right_text_bottom && firstRow && firstRow.length > 3) {
-            this.footer_content_right_text_bottom.textContent = tableDataView.rows[0][3].toString();
+        const floatValue = parseFloat(textValue);
+        if (trendIconSelected === "hide" || !floatValue || floatValue === 0) {
+            containingElement.hidden = true;
+            return;
         }
+        containingElement.hidden = false;
+        this.swapSVGIcon(trendIconSelected.replace("#", floatValue > 0 ? "up" : "down"), floatValue > 0 ? trendUpColour : trendDownColour, iconElement);
+    }
+    setTooltip(tableDataView, tooltipPosition, tooltipElement, headingPosition) {
+        if (tooltipElement) {
+            const description = this.getData(tableDataView, tooltipPosition);
+            const heading = this.getData(tableDataView, headingPosition);
+            this.tooltipServiceWrapper.addTooltip((0,d3_selection__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)(tooltipElement), () => {
+                return [
+                    {
+                        displayName: "",
+                        value: description,
+                        color: "#FFFFFF",
+                        header: heading,
+                    },
+                ];
+            });
+        }
+        else {
+            this.tooltipServiceWrapper.hide();
+        }
+    }
+    getTooltipData(value) {
+        //const formattedValue = valueFormatter.format(value.value, value.format);
+        //const language = this.localizationManager.getDisplayName("LanguageKey");
+        return [
+            {
+                displayName: value,
+                value: value,
+                color: "red",
+                header: value && "displayed language " + value,
+            },
+        ];
     }
     /**
      * Returns properties pane formatting model content hierarchies, properties and latest formatting values, Then populate properties pane.
@@ -1587,19 +2861,530 @@ class Visual {
                 return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
                     currentColor +
                     '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>');
-            case "loading":
-                return ('<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="' +
+            case "info":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
                     currentColor +
-                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>');
-            default:
+                    '"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>');
+            case "arrow-up":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>');
+            case "arrow-up-narrow-wide":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>');
+            case "chevron-up":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up-icon lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>');
+            case "move-up":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-up-icon lucide-move-up"><path d="M8 6L12 2L16 6"/><path d="M12 2V22"/></svg>');
+            case "trending-up":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up-icon lucide-trending-up"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>');
+            case "arrow-down":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-icon lucide-arrow-down"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>');
+            case "arrow-down-narrow-wide":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-narrow-wide-icon lucide-arrow-down-narrow-wide"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h4"/><path d="M11 8h7"/><path d="M11 12h10"/></svg>');
+            case "chevron-down":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>');
+            case "move-down":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-down-icon lucide-move-down"><path d="M8 18L12 22L16 18"/><path d="M12 2V22"/></svg>');
+            case "trending-down":
+                return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>');
+            case "loading-circle":
                 return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
                     currentColor +
                     '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-circle-icon lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>');
+            case "loading":
+            default:
+                return ('<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="' +
+                    currentColor +
+                    '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>');
                 break;
         }
     }
 }
 
+
+/***/ }),
+
+/***/ 9063:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function selection_cloneShallow() {
+  var clone = this.cloneNode(false), parent = this.parentNode;
+  return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
+}
+
+function selection_cloneDeep() {
+  var clone = this.cloneNode(true), parent = this.parentNode;
+  return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
+
+/***/ }),
+
+/***/ 9215:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+function lower() {
+  if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__() {
+  return this.each(lower);
+}
+
+
+/***/ }),
+
+/***/ 9433:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(value) {
+  return arguments.length
+      ? this.property("__data__", value)
+      : this.node().__data__;
+}
+
+
+/***/ }),
+
+/***/ 9713:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1882);
+/* harmony import */ var _array_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5478);
+/* harmony import */ var _selectorAll_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(747);
+
+
+
+
+function arrayAll(select) {
+  return function() {
+    return (0,_array_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(select.apply(this, arguments));
+  };
+}
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(select) {
+  if (typeof select === "function") select = arrayAll(select);
+  else select = (0,_selectorAll_js__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A)(select);
+
+  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+      if (node = group[i]) {
+        subgroups.push(select.call(node, node.__data__, i, group));
+        parents.push(node);
+      }
+    }
+  }
+
+  return new _index_js__WEBPACK_IMPORTED_MODULE_2__/* .Selection */ .LN(subgroups, parents);
+}
+
+
+/***/ }),
+
+/***/ 9731:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(x) {
+  return function() {
+    return x;
+  };
+}
+
+
+/***/ }),
+
+/***/ 9734:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   A: () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1882);
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6541);
+
+
+
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(match) {
+  if (typeof match !== "function") match = (0,_matcher_js__WEBPACK_IMPORTED_MODULE_0__/* ["default"] */ .A)(match);
+
+  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
+      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
+        subgroup.push(node);
+      }
+    }
+  }
+
+  return new _index_js__WEBPACK_IMPORTED_MODULE_1__/* .Selection */ .LN(subgroups, this._parents);
+}
+
+
+/***/ }),
+
+/***/ 9754:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   $n: () => (/* binding */ AlignmentGroup),
+/* harmony export */   Ap: () => (/* binding */ Slider),
+/* harmony export */   Cx: () => (/* binding */ FontPicker),
+/* harmony export */   Kx: () => (/* binding */ Model),
+/* harmony export */   PA: () => (/* binding */ ItemDropdown),
+/* harmony export */   St: () => (/* binding */ CompositeCard),
+/* harmony export */   Tn: () => (/* binding */ SimpleCard),
+/* harmony export */   iB: () => (/* binding */ NumUpDown),
+/* harmony export */   jF: () => (/* binding */ ToggleSwitch),
+/* harmony export */   sk: () => (/* binding */ ColorPicker),
+/* harmony export */   tc: () => (/* binding */ FontControl)
+/* harmony export */ });
+/* unused harmony exports CardGroupEntity, Group, SimpleSlice, DatePicker, AutoDropdown, DurationPicker, ErrorRangeControl, FieldPicker, ItemFlagsSelection, AutoFlagsSelection, TextInput, TextArea, GradientBar, ImageUpload, ListEditor, ReadOnlyText, ShapeMapSelector, CompositeSlice, MarginPadding, Container, ContainerItem */
+/* harmony import */ var _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8639);
+/**
+ * Powerbi utils components classes for custom visual formatting pane objects
+ *
+ */
+
+class NamedEntity {
+}
+class CardGroupEntity extends NamedEntity {
+}
+class Model {
+}
+/** CompositeCard is use to populate a card into the formatting pane with multiple groups */
+class CompositeCard extends NamedEntity {
+}
+class Group extends CardGroupEntity {
+    constructor(object) {
+        super();
+        Object.assign(this, object);
+    }
+}
+/** SimpleCard is use to populate a card into the formatting pane in a single group */
+class SimpleCard extends CardGroupEntity {
+}
+class SimpleSlice extends NamedEntity {
+    constructor(object) {
+        super();
+        Object.assign(this, object);
+    }
+    getFormattingSlice(objectName, localizationManager) {
+        const controlType = this.type;
+        const propertyName = this.name;
+        const sliceDisplayName = (localizationManager && this.displayNameKey) ? localizationManager.getDisplayName(this.displayNameKey) : this.displayName;
+        const sliceDescription = (localizationManager && this.descriptionKey) ? localizationManager.getDisplayName(this.descriptionKey) : this.description;
+        const componentDisplayName = {
+            displayName: sliceDisplayName,
+            description: sliceDescription,
+            uid: objectName + '-' + propertyName,
+        };
+        return Object.assign(Object.assign({}, componentDisplayName), { control: {
+                type: controlType,
+                properties: this.getFormattingComponent(objectName, localizationManager)
+            } });
+    }
+    // eslint-disable-next-line
+    getFormattingComponent(objectName, localizationManager) {
+        return {
+            descriptor: _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__/* .getDescriptor */ .y(objectName, this),
+            value: this.value,
+        };
+    }
+    getRevertToDefaultDescriptor(objectName) {
+        return [{
+                objectName: objectName,
+                propertyName: this.name
+            }];
+    }
+    setPropertiesValues(dataViewObjects, objectName) {
+        var _a;
+        const newValue = (_a = dataViewObjects === null || dataViewObjects === void 0 ? void 0 : dataViewObjects[objectName]) === null || _a === void 0 ? void 0 : _a[this.name];
+        this.value = _utils_FormattingSettingsUtils__WEBPACK_IMPORTED_MODULE_0__/* .getPropertyValue */ .D(this, newValue, this.value);
+    }
+}
+class AlignmentGroup extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "AlignmentGroup" /* visuals.FormattingComponent.AlignmentGroup */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { mode: this.mode, supportsNoSelection: this.supportsNoSelection });
+    }
+}
+class ToggleSwitch extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "ToggleSwitch" /* visuals.FormattingComponent.ToggleSwitch */;
+    }
+}
+class ColorPicker extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "ColorPicker" /* visuals.FormattingComponent.ColorPicker */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { defaultColor: this.defaultColor, isNoFillItemSupported: this.isNoFillItemSupported });
+    }
+}
+class NumUpDown extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "NumUpDown" /* visuals.FormattingComponent.NumUpDown */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { options: this.options });
+    }
+}
+class Slider extends NumUpDown {
+    constructor() {
+        super(...arguments);
+        this.type = "Slider" /* visuals.FormattingComponent.Slider */;
+    }
+}
+class DatePicker extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "DatePicker" /* visuals.FormattingComponent.DatePicker */;
+    }
+    getFormattingComponent(objectName, localizationManager) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { placeholder: (localizationManager && this.placeholderKey) ? localizationManager.getDisplayName(this.placeholderKey) : this.placeholder, validators: this.validators });
+    }
+}
+class ItemDropdown extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "Dropdown" /* visuals.FormattingComponent.Dropdown */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { items: this.items });
+    }
+}
+class AutoDropdown extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "Dropdown" /* visuals.FormattingComponent.Dropdown */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { mergeValues: this.mergeValues, filterValues: this.filterValues });
+    }
+}
+class DurationPicker extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "DurationPicker" /* visuals.FormattingComponent.DurationPicker */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators });
+    }
+}
+class ErrorRangeControl extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "ErrorRangeControl" /* visuals.FormattingComponent.ErrorRangeControl */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators });
+    }
+}
+class FieldPicker extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "FieldPicker" /* visuals.FormattingComponent.FieldPicker */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { validators: this.validators, allowMultipleValues: this.allowMultipleValues });
+    }
+}
+class ItemFlagsSelection extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "FlagsSelection" /* visuals.FormattingComponent.FlagsSelection */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { items: this.items });
+    }
+}
+class AutoFlagsSelection extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "FlagsSelection" /* visuals.FormattingComponent.FlagsSelection */;
+    }
+}
+class TextInput extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "TextInput" /* visuals.FormattingComponent.TextInput */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { placeholder: this.placeholder });
+    }
+}
+class TextArea extends TextInput {
+    constructor() {
+        super(...arguments);
+        this.type = "TextArea" /* visuals.FormattingComponent.TextArea */;
+    }
+}
+class FontPicker extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "FontPicker" /* visuals.FormattingComponent.FontPicker */;
+    }
+}
+class GradientBar extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "GradientBar" /* visuals.FormattingComponent.GradientBar */;
+    }
+}
+class ImageUpload extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "ImageUpload" /* visuals.FormattingComponent.ImageUpload */;
+    }
+}
+class ListEditor extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "ListEditor" /* visuals.FormattingComponent.ListEditor */;
+    }
+}
+class ReadOnlyText extends SimpleSlice {
+    constructor() {
+        super(...arguments);
+        this.type = "ReadOnlyText" /* visuals.FormattingComponent.ReadOnlyText */;
+    }
+}
+class ShapeMapSelector extends SimpleSlice {
+    constructor(object) {
+        super(object);
+        this.type = "ShapeMapSelector" /* visuals.FormattingComponent.ShapeMapSelector */;
+    }
+    getFormattingComponent(objectName) {
+        return Object.assign(Object.assign({}, super.getFormattingComponent(objectName)), { isAzMapReferenceSelector: this.isAzMapReferenceSelector });
+    }
+}
+class CompositeSlice extends NamedEntity {
+    constructor(object) {
+        super();
+        Object.assign(this, object);
+    }
+    getFormattingSlice(objectName, localizationManager) {
+        const controlType = this.type;
+        const propertyName = this.name;
+        const componentDisplayName = {
+            displayName: (localizationManager && this.displayNameKey) ? localizationManager.getDisplayName(this.displayNameKey) : this.displayName,
+            description: (localizationManager && this.descriptionKey) ? localizationManager.getDisplayName(this.descriptionKey) : this.description,
+            uid: objectName + '-' + propertyName,
+        };
+        return Object.assign(Object.assign({}, componentDisplayName), { control: {
+                type: controlType,
+                properties: this.getFormattingComponent(objectName)
+            } });
+    }
+}
+class FontControl extends CompositeSlice {
+    constructor(object) {
+        super(object);
+        this.type = "FontControl" /* visuals.FormattingComponent.FontControl */;
+    }
+    getFormattingComponent(objectName) {
+        var _a, _b, _c;
+        return {
+            fontFamily: this.fontFamily.getFormattingComponent(objectName),
+            fontSize: this.fontSize.getFormattingComponent(objectName),
+            bold: (_a = this.bold) === null || _a === void 0 ? void 0 : _a.getFormattingComponent(objectName),
+            italic: (_b = this.italic) === null || _b === void 0 ? void 0 : _b.getFormattingComponent(objectName),
+            underline: (_c = this.underline) === null || _c === void 0 ? void 0 : _c.getFormattingComponent(objectName)
+        };
+    }
+    getRevertToDefaultDescriptor(objectName) {
+        return this.fontFamily.getRevertToDefaultDescriptor(objectName)
+            .concat(this.fontSize.getRevertToDefaultDescriptor(objectName))
+            .concat(this.bold ? this.bold.getRevertToDefaultDescriptor(objectName) : [])
+            .concat(this.italic ? this.italic.getRevertToDefaultDescriptor(objectName) : [])
+            .concat(this.underline ? this.underline.getRevertToDefaultDescriptor(objectName) : []);
+    }
+    setPropertiesValues(dataViewObjects, objectName) {
+        var _a, _b, _c;
+        this.fontFamily.setPropertiesValues(dataViewObjects, objectName);
+        this.fontSize.setPropertiesValues(dataViewObjects, objectName);
+        (_a = this.bold) === null || _a === void 0 ? void 0 : _a.setPropertiesValues(dataViewObjects, objectName);
+        (_b = this.italic) === null || _b === void 0 ? void 0 : _b.setPropertiesValues(dataViewObjects, objectName);
+        (_c = this.underline) === null || _c === void 0 ? void 0 : _c.setPropertiesValues(dataViewObjects, objectName);
+    }
+}
+class MarginPadding extends CompositeSlice {
+    constructor(object) {
+        super(object);
+        this.type = "MarginPadding" /* visuals.FormattingComponent.MarginPadding */;
+    }
+    getFormattingComponent(objectName) {
+        return {
+            left: this.left.getFormattingComponent(objectName),
+            right: this.right.getFormattingComponent(objectName),
+            top: this.top.getFormattingComponent(objectName),
+            bottom: this.bottom.getFormattingComponent(objectName)
+        };
+    }
+    getRevertToDefaultDescriptor(objectName) {
+        return this.left.getRevertToDefaultDescriptor(objectName)
+            .concat(this.right.getRevertToDefaultDescriptor(objectName))
+            .concat(this.top.getRevertToDefaultDescriptor(objectName))
+            .concat(this.bottom.getRevertToDefaultDescriptor(objectName));
+    }
+    setPropertiesValues(dataViewObjects, objectName) {
+        this.left.setPropertiesValues(dataViewObjects, objectName);
+        this.right.setPropertiesValues(dataViewObjects, objectName);
+        this.top.setPropertiesValues(dataViewObjects, objectName);
+        this.bottom.setPropertiesValues(dataViewObjects, objectName);
+    }
+}
+class Container extends NamedEntity {
+    constructor(object) {
+        super();
+        Object.assign(this, object);
+    }
+}
+class ContainerItem extends (/* unused pure expression or super */ null && (NamedEntity)) {
+}
+//# sourceMappingURL=FormattingSettingsComponents.js.map
 
 /***/ })
 
@@ -1666,7 +3451,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (visualPlugin)
 /* harmony export */ });
-/* harmony import */ var _src_visual__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(849);
+/* harmony import */ var _src_visual__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8849);
 
 var powerbiKey = "powerbi";
 var powerbi = window[powerbiKey];

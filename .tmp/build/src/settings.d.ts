@@ -14,6 +14,7 @@ declare class StyleCardSettings extends FormattingSettingsCard {
     bottomLeftIconColour: formattingSettings.ColorPicker;
     centerIcon: formattingSettings.ItemDropdown;
     bottomLeftIcon: formattingSettings.ItemDropdown;
+    trendIcon: formattingSettings.ItemDropdown;
     borderRadius: formattingSettings.Slider;
     slices: Array<FormattingSettingsSlice>;
 }

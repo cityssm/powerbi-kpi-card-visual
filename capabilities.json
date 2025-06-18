@@ -176,6 +176,12 @@
             "enumeration": []
           }
         },
+        "trendIcon": {
+          "type": {
+            "enumeration": []
+          }
+        },
+
         "borderRadius": {
           "type": { "numeric": true }
         }

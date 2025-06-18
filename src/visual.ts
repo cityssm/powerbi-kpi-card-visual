@@ -27,10 +27,15 @@
 
 import "./../style/visual.less";
 import powerbi from "powerbi-visuals-api";
+import { createTooltipServiceWrapper, ITooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
+import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
+
+import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
 
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 
 import DataView = powerbi.DataView;
 import IVisualHost = powerbi.extensibility.IVisualHost;
@@ -53,12 +58,17 @@ export class Visual implements IVisual {
 
   private header_content: HTMLDivElement;
   private header_text: HTMLParagraphElement;
+  private header_text_icon: HTMLDivElement;
 
   private middle_content: HTMLDivElement;
   private middle_content_center: HTMLDivElement;
   private middle_content_center_icon: HTMLDivElement;
 
   private middle_content_center_text: HTMLDivElement;
+
+  private middle_content_center_trend: HTMLDivElement;
+  private middle_content_center_trend_icon: HTMLDivElement;
+  private middle_content_center_trend_text: HTMLDivElement;
 
   private footer_content: HTMLDivElement;
   private footer_content_left: HTMLDivElement;
@@ -68,9 +78,13 @@ export class Visual implements IVisual {
   private footer_content_right_text_top: HTMLParagraphElement;
   private footer_content_right_text_bottom: HTMLParagraphElement;
 
+  private tooltipServiceWrapper: ITooltipServiceWrapper;
+
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
+
     this.target = options.element;
+    this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
 
     if (document) {
       /*###########################################################
@@ -81,11 +95,17 @@ export class Visual implements IVisual {
       //CREATE TEXT ELEMENT
       this.header_text = document.createElement("p");
       this.header_text.innerText = "";
+
+      this.header_text_icon = document.createElement("div");
+      this.header_text_icon.className = "header-icon ";
+      this.swapSVGIcon("info", "#808080", this.header_text_icon);
+
       //APPEND ELEMENTS TO HEADER
+      this.header_content.appendChild(this.header_text_icon);
       this.header_content.appendChild(this.header_text);
 
       /*###########################################################
-        CREATE MIDDLE ELEMENTS
+        CREATE MIDDLE ICON AND VALUE TEXT
       ###########################################################*/
       this.middle_content_center_text = document.createElement("p");
       this.middle_content_center_text.innerText = "";
@@ -95,10 +115,32 @@ export class Visual implements IVisual {
 
       this.swapSVGIcon("loading", "#808080", this.middle_content_center_icon);
 
+      /*######################
+        CREATE MIDDLE TREND LINE
+      ########################*/
+      this.middle_content_center_trend_icon = document.createElement("div");
+      this.middle_content_center_trend_icon.className = "middle-trend-icon";
+
+      this.swapSVGIcon("arrow-up", "#4CBB17", this.middle_content_center_trend_icon);
+      this.swapSVGIcon("arrow-up", "#ED1C24", this.middle_content_center_trend_icon);
+      //#ED1C24
+      this.middle_content_center_trend_text = document.createElement("p");
+      this.middle_content_center_trend_text.innerText = "-2.57%";
+
+      this.middle_content_center_trend = document.createElement("div");
+      this.middle_content_center_trend.className = "flex-container-header";
+      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_text);
+      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_icon);
+
+      /*######################
+        ATTACH MIDDLE COMPONENTS
+      ########################*/
+
       this.middle_content_center = document.createElement("div");
       this.middle_content_center.className = "middle-content ";
       this.middle_content_center.appendChild(this.middle_content_center_icon);
       this.middle_content_center.appendChild(this.middle_content_center_text);
+      this.middle_content_center.appendChild(this.middle_content_center_trend);
 
       this.middle_content = document.createElement("div");
       this.middle_content.className = "flex-container-middle";
@@ -209,6 +251,17 @@ export class Visual implements IVisual {
       this.middle_content_center.style.float = "";
 
       /*##################################################################
+      TREND FONT DEFAULTS
+     ##################################################################*/
+
+      this.middle_content_center_trend_text.style.margin = "0px";
+      this.middle_content_center_trend_text.style.fontFamily = "Arial";
+      this.middle_content_center_trend_text.style.fontSize = "21px";
+      this.middle_content_center_trend_text.style.fontStyle = "normal";
+      this.middle_content_center_trend_text.style.fontWeight = "normal";
+      this.middle_content_center_trend_text.style.textDecoration = "normal";
+
+      /*##################################################################
       FOOTER TOP TEXT DEFAULTS
      ##################################################################*/
 
@@ -243,7 +296,6 @@ export class Visual implements IVisual {
     );
 
     //this.target.hidden = false;
-
     const textCard = this.formattingSettings.textCard;
     const styleCard = this.formattingSettings.styleCard;
 
@@ -266,6 +318,9 @@ export class Visual implements IVisual {
     const centerIconColour: string = styleCard.centerIconColour.value.value as string;
     const bottomIconColour: string = styleCard.bottomLeftIconColour.value.value as string;
 
+    const trendUpColour: string = "#4CBB17";
+    const trendDownColour: string = "#ED1C24";
+
     this.main_content.style.borderColor = primaryColour;
     this.main_content.style.backgroundColor = primaryColour;
 
@@ -286,12 +341,18 @@ export class Visual implements IVisual {
     this.header_middle_content.style.borderRadius = borderRadius;
     this.main_content.style.borderRadius = borderRadius;
 
+    if (styleCard.borderRadius.value >= 20) {
+      const newPadding = styleCard.borderRadius.value - 10;
+      this.header_text_icon.style.paddingRight = newPadding + "px";
+    }
+
     /*##################################################################
       SET ICONS
      ##################################################################*/
 
     const bottomIconSelected: string = styleCard.bottomLeftIcon.value.value as string;
     const middleIconSelected: string = styleCard.centerIcon.value.value as string;
+    const trendIconSelected: string = styleCard.trendIcon.value.value as string;
 
     if (middleIconSelected === "hide") {
       this.middle_content_center_icon.hidden = true;
@@ -306,6 +367,8 @@ export class Visual implements IVisual {
       this.footer_content_left.hidden = false;
       this.swapSVGIcon(bottomIconSelected, bottomIconColour, this.footer_content_left_icon);
     }
+
+    this.swapSVGIcon("info", primaryColour, this.header_text_icon);
 
     /*##################################################################
       TITLE FONT DETAILS
@@ -388,23 +451,128 @@ export class Visual implements IVisual {
     this.footer_content_right_text_bottom.style.textAlign = footerTextBottomAlignment;
 
     const tableDataView = options.dataViews[0].table;
-    const firstRow = options.dataViews[0].table?.rows[0];
+    //verify that atleast one row exists otherwise we will get some runtime errors.
 
-    if (this.header_text && firstRow && firstRow.length > 0) {
-      this.header_text.textContent = tableDataView.rows[0][0].toString();
+    //POSITION 1: HEADING
+    //POSITION 2: CENTER VALUE
+    //POSITION 3: FOOTER TOP TEXT
+    //POSITION 4: FOOTER BOTTOM TEXT
+    //POSITION 5: INCREASE/DECREASE
+    //POSITION 6: INFO DESCRIPTION
+    //POSITION 7: ACCESSIBILITY
+    this.toggleParagraphElement(tableDataView, 0, this.header_text);
+    this.toggleParagraphElement(tableDataView, 1, this.middle_content_center_text);
+    this.toggleParagraphElement(tableDataView, 2, this.footer_content_right_text_top);
+    this.toggleParagraphElement(tableDataView, 3, this.footer_content_right_text_bottom);
+    this.toggleTrendElement(
+      tableDataView,
+      4,
+      this.middle_content_center_trend,
+      this.middle_content_center_trend_text,
+      this.middle_content_center_trend_icon,
+      trendIconSelected,
+      trendUpColour,
+      trendDownColour
+    );
+    /*##################################################################
+      TOOLTIP SETTINGS
+     ##################################################################*/
+    this.setTooltip(tableDataView, 5, this.header_text_icon, 0);
+    /*##################################################################
+      TREND SETTINGS
+     ##################################################################*/
+  }
+
+  private getData(tableDataView: powerbi.DataViewTable, position: number) {
+    const tableRow = tableDataView?.rows[0];
+
+    if (tableRow && tableRow.length > position) {
+      return tableDataView.rows[0][position].toString();
     }
 
-    if (this.middle_content_center_text && firstRow && firstRow.length > 1) {
-      this.middle_content_center_text.textContent = tableDataView.rows[0][1].toString();
-    }
-    if (this.footer_content_right_text_top && firstRow && firstRow.length > 2) {
-      this.footer_content_right_text_top.textContent = tableDataView.rows[0][2].toString();
-    }
-    if (this.footer_content_right_text_bottom && firstRow && firstRow.length > 3) {
-      this.footer_content_right_text_bottom.textContent = tableDataView.rows[0][3].toString();
+    return "";
+  }
+
+  private toggleParagraphElement(
+    tableDataView: powerbi.DataViewTable,
+    position: number,
+    element: HTMLParagraphElement
+  ) {
+    if (element) {
+      element.textContent = this.getData(tableDataView, position);
     }
   }
 
+  private toggleTrendElement(
+    tableDataView: powerbi.DataViewTable,
+    position: number,
+    containingElement: HTMLDivElement,
+    textElement: HTMLParagraphElement,
+    iconElement: HTMLDivElement,
+    trendIconSelected: string,
+    trendUpColour: string,
+    trendDownColour: string
+  ) {
+    const textValue = this.getData(tableDataView, position);
+    textElement.textContent = textValue;
+
+    if (textValue === "") {
+      return;
+    }
+
+    const floatValue = parseFloat(textValue);
+
+    if (trendIconSelected === "hide" || !floatValue || floatValue === 0) {
+      containingElement.hidden = true;
+      return;
+    }
+
+    containingElement.hidden = false;
+
+    this.swapSVGIcon(
+      trendIconSelected.replace("#", floatValue > 0 ? "up" : "down"),
+      floatValue > 0 ? trendUpColour : trendDownColour,
+      iconElement
+    );
+  }
+
+  private setTooltip(
+    tableDataView: powerbi.DataViewTable,
+    tooltipPosition: number,
+    tooltipElement: HTMLDivElement,
+    headingPosition: number
+  ) {
+    if (tooltipElement) {
+      const description = this.getData(tableDataView, tooltipPosition);
+      const heading = this.getData(tableDataView, headingPosition);
+
+      this.tooltipServiceWrapper.addTooltip(d3Select(tooltipElement), () => {
+        return [
+          {
+            displayName: "",
+            value: description,
+            color: "#FFFFFF",
+            header: heading,
+          },
+        ];
+      });
+    } else {
+      this.tooltipServiceWrapper.hide();
+    }
+  }
+
+  private getTooltipData(value: string): VisualTooltipDataItem[] {
+    //const formattedValue = valueFormatter.format(value.value, value.format);
+    //const language = this.localizationManager.getDisplayName("LanguageKey");
+    return [
+      {
+        displayName: value,
+        value: value,
+        color: "red",
+        header: value && "displayed language " + value,
+      },
+    ];
+  }
   /**
    * Returns properties pane formatting model content hierarchies, properties and latest formatting values, Then populate properties pane.
    * This method is called once every time we open properties pane or when the user edit any format property.
@@ -880,17 +1048,85 @@ export class Visual implements IVisual {
           currentColor +
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
         );
-      case "loading":
+      case "info":
         return (
-          '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="' +
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
           currentColor +
-          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>'
+          '"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>'
         );
-      default:
+      case "arrow-up":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
+        );
+      case "arrow-up-narrow-wide":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>'
+        );
+      case "chevron-up":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up-icon lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>'
+        );
+      case "move-up":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-up-icon lucide-move-up"><path d="M8 6L12 2L16 6"/><path d="M12 2V22"/></svg>'
+        );
+      case "trending-up":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up-icon lucide-trending-up"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>'
+        );
+      case "arrow-down":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-icon lucide-arrow-down"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>'
+        );
+      case "arrow-down-narrow-wide":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-narrow-wide-icon lucide-arrow-down-narrow-wide"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h4"/><path d="M11 8h7"/><path d="M11 12h10"/></svg>'
+        );
+      case "chevron-down":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>'
+        );
+      case "move-down":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-down-icon lucide-move-down"><path d="M8 18L12 22L16 18"/><path d="M12 2V22"/></svg>'
+        );
+      case "trending-down":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>'
+        );
+
+      case "loading-circle":
         return (
           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
           currentColor +
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-circle-icon lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+        );
+      case "loading":
+      default:
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>'
         );
         break;
     }

@@ -121,14 +121,14 @@ export class Visual implements IVisual {
       this.middle_content_center_trend_icon = document.createElement("div");
       this.middle_content_center_trend_icon.className = "middle-trend-icon";
 
-      this.swapSVGIcon("arrow-up", "#4CBB17", this.middle_content_center_trend_icon);
-      this.swapSVGIcon("arrow-up", "#ED1C24", this.middle_content_center_trend_icon);
+      this.swapSVGIcon("none", "#4CBB17", this.middle_content_center_trend_icon);
+
       //#ED1C24
       this.middle_content_center_trend_text = document.createElement("p");
       this.middle_content_center_trend_text.innerText = "-2.57%";
 
       this.middle_content_center_trend = document.createElement("div");
-      this.middle_content_center_trend.className = "flex-container-header";
+      this.middle_content_center_trend.className = "flex-trend-container";
       this.middle_content_center_trend.appendChild(this.middle_content_center_trend_text);
       this.middle_content_center_trend.appendChild(this.middle_content_center_trend_icon);
 
@@ -254,10 +254,10 @@ export class Visual implements IVisual {
       TREND FONT DEFAULTS
      ##################################################################*/
 
-      this.middle_content_center_trend_text.style.margin = "0px";
+      this.middle_content_center_trend_text.style.margin = "auto";
       this.middle_content_center_trend_text.style.fontFamily = "Arial";
-      this.middle_content_center_trend_text.style.fontSize = "21px";
-      this.middle_content_center_trend_text.style.fontStyle = "normal";
+      this.middle_content_center_trend_text.style.fontSize = "14px";
+      this.middle_content_center_trend_text.style.fontStyle = "italic";
       this.middle_content_center_trend_text.style.fontWeight = "normal";
       this.middle_content_center_trend_text.style.textDecoration = "normal";
 
@@ -343,7 +343,8 @@ export class Visual implements IVisual {
 
     if (styleCard.borderRadius.value >= 20) {
       const newPadding = styleCard.borderRadius.value - 10;
-      this.header_text_icon.style.paddingRight = newPadding + "px";
+      this.header_text_icon.style.paddingLeft = newPadding + "px";
+      this.middle_content_center_trend.style.paddingRight = newPadding + "px";
     }
 
     /*##################################################################
@@ -453,11 +454,12 @@ export class Visual implements IVisual {
     const tableDataView = options.dataViews[0].table;
     //verify that atleast one row exists otherwise we will get some runtime errors.
 
-    //POSITION 1: HEADING
-    //POSITION 2: CENTER VALUE
-    //POSITION 3: FOOTER TOP TEXT
-    //POSITION 4: FOOTER BOTTOM TEXT
-    //POSITION 5: INCREASE/DECREASE
+    //POSITION 0: HEADING
+    //POSITION 1: CENTER VALUE
+    //POSITION 2: FOOTER TOP TEXT
+    //POSITION 3: FOOTER BOTTOM TEXT
+    //POSITION 4: INCREASE/DECREASE
+    //POSITION 5: INCREASE/DECREASE DIRECTION
     //POSITION 6: INFO DESCRIPTION
     //POSITION 7: ACCESSIBILITY
     this.toggleParagraphElement(tableDataView, 0, this.header_text);
@@ -472,12 +474,13 @@ export class Visual implements IVisual {
       this.middle_content_center_trend_icon,
       trendIconSelected,
       trendUpColour,
-      trendDownColour
+      trendDownColour,
+      5
     );
     /*##################################################################
       TOOLTIP SETTINGS
      ##################################################################*/
-    this.setTooltip(tableDataView, 5, this.header_text_icon, 0);
+    this.setTooltip(tableDataView, 6, this.header_text_icon, 0);
     /*##################################################################
       TREND SETTINGS
      ##################################################################*/
@@ -505,15 +508,16 @@ export class Visual implements IVisual {
 
   private toggleTrendElement(
     tableDataView: powerbi.DataViewTable,
-    position: number,
+    trendPosition: number,
     containingElement: HTMLDivElement,
     textElement: HTMLParagraphElement,
     iconElement: HTMLDivElement,
     trendIconSelected: string,
     trendUpColour: string,
-    trendDownColour: string
+    trendDownColour: string,
+    directionPosition: number
   ) {
-    const textValue = this.getData(tableDataView, position);
+    const textValue = this.getData(tableDataView, trendPosition);
     textElement.textContent = textValue;
 
     if (textValue === "") {
@@ -529,8 +533,10 @@ export class Visual implements IVisual {
 
     containingElement.hidden = false;
 
+    const directionValue = this.getData(tableDataView, directionPosition);
+
     this.swapSVGIcon(
-      trendIconSelected.replace("#", floatValue > 0 ? "up" : "down"),
+      trendIconSelected.replace("#", directionValue),
       floatValue > 0 ? trendUpColour : trendDownColour,
       iconElement
     );

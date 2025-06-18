@@ -199,5 +199,11 @@
       }
     }
   ],
-  "privileges": []
+  "privileges": [],
+  "tooltips": {
+    "supportedTypes": {
+      "canvas": true
+    },
+    "roles": ["tooltips"]
+  }
 }

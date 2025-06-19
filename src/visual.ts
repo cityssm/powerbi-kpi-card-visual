@@ -55,7 +55,7 @@ export class Visual implements IVisual {
   private formattingSettingsService: FormattingSettingsService;
   private main_content: HTMLDivElement;
 
-  private information_tooltip_icon: HTMLDivElement;
+  private information_tooltip_icon: HTMLButtonElement;
   private information_trend_container: HTMLDivElement;
   private information_trend_container_icon: HTMLDivElement;
   private information_trend_container_text: HTMLDivElement;
@@ -92,6 +92,8 @@ export class Visual implements IVisual {
   private themeForegroundSelectedColour: string;
   private themeLinkColour: string;
 
+  private isInfoTooltipOpen: boolean = false;
+
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
 
@@ -109,6 +111,8 @@ export class Visual implements IVisual {
       this.themeForegroundSelectedColour = colorPalette.foregroundSelected.value;
       this.themeLinkColour = colorPalette.hyperlink.value;
     }
+
+    options.host.hostCapabilities.allowInteractions = true;
 
     if (document) {
       /*###########################################################
@@ -233,7 +237,7 @@ export class Visual implements IVisual {
       INFORMATION ICON ON MAIN
      ##################################################################*/
 
-      this.information_tooltip_icon = document.createElement("div");
+      this.information_tooltip_icon = document.createElement("button");
       this.information_tooltip_icon.className = "header-icon ";
 
       this.swapSVGIcon(
@@ -342,18 +346,40 @@ export class Visual implements IVisual {
       ACCESSIBILITY
       ############################################*/
 
-      this.header_text.tabIndex = 1;
-      this.middle_content_center_text.tabIndex = 2;
-      this.information_tooltip_icon.tabIndex = 3;
-      this.information_trend_container.tabIndex = 4;
-      this.footer_content_right_text_top.tabIndex = 5;
-      this.footer_content_right_text_bottom.tabIndex = 6;
+      this.header_content.tabIndex = 2;
+      this.middle_content_center_text.tabIndex = 3;
+      this.information_tooltip_icon.tabIndex = 4;
+      this.information_trend_container.tabIndex = 5;
+      this.footer_content_right_text_top.tabIndex = 6;
+      this.footer_content_right_text_bottom.tabIndex = 7;
+
+      this.middle_content_center_icon.ariaHidden = "true";
+      this.footer_content_left_icon.ariaHidden = "true";
+
+      this.information_trend_container_icon.ariaHidden = "true";
 
       this.header_content.ariaLabel = "Key Performance Indicator Title";
+      this.header_content.role = "heading";
+
       this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
+      this.middle_content_center.role = "paragraph";
 
       this.information_tooltip_icon.ariaLabel = "Additional Information";
+      this.information_tooltip_icon.role = "button";
+      this.information_tooltip_icon.ariaHasPopup = "true";
+      this.information_tooltip_icon.ariaExpanded = String(this.isInfoTooltipOpen);
+      this.information_tooltip_icon.onclick = () => {
+        console.log("ORIGINAL CLICK");
+      };
+      this.information_tooltip_icon.onkeydown = () => {
+        console.log("ORIGINAL KEYDOWN");
+      };
+
       this.information_trend_container.ariaLabel = "Difference between last period";
+      this.information_trend_container.role = "note";
+
+      this.footer_content_right_text_top.role = "paragraph";
+      this.footer_content_right_text_bottom.role = "paragraph";
 
       this.target.appendChild(this.main_content);
     }
@@ -573,8 +599,10 @@ export class Visual implements IVisual {
     //If title or description have changed remove the onfocus event and recreate it.
     //otherwise the title and description will be wrong
     //only remove the event if one exists
-    if (this.information_tooltip_icon.onfocus && tooltipValuesChanged) {
+    if (tooltipValuesChanged) {
       this.information_tooltip_icon.onfocus = null;
+      //this.information_tooltip_icon.onkeydown = null;
+      this.information_tooltip_icon.onclick = null;
     }
 
     //check if the onfocus event is already set if not create it.
@@ -583,14 +611,59 @@ export class Visual implements IVisual {
       this.currentDescription = tooltipDescription;
 
       this.information_tooltip_icon.onfocus = (event) => {
-        this.showTooltipOnFocus(event, tooltipTitle, tooltipDescription);
+        console.log("FOCUS");
+        this.showTooltip(<HTMLDivElement>event.target, tooltipTitle, tooltipDescription);
+        this.setTooltipToggle(true);
+      };
+    }
+
+    /*if (!this.information_tooltip_icon.onkeydown) {
+      this.currentTitle = tooltipTitle;
+      this.currentDescription = tooltipDescription;
+
+      this.information_tooltip_icon.onkeydown = (event) => {
+        console.log(event.code);
+        console.log(<HTMLDivElement>event.target);
+        console.log("KEYDOWN");
+        if (event.code === "Enter" || event.code === " ") {
+          if (this.isInfoTooltipOpen) {
+            this.hideTooltip();
+            this.setTooltipToggle(false);
+          } else {
+            this.showTooltip(
+              <HTMLDivElement>(<SVGElement>event.target).parentElement,
+              tooltipTitle,
+              tooltipDescription
+            );
+            this.setTooltipToggle(true);
+          }
+        }
+      };
+    }*/
+
+    if (!this.information_tooltip_icon.onclick) {
+      this.currentTitle = tooltipTitle;
+      this.currentDescription = tooltipDescription;
+
+      this.information_tooltip_icon.onclick = (event) => {
+        console.log(event);
+        console.log("ON CLICK");
+        console.log(<HTMLDivElement>(<SVGElement>event.target).parentElement);
+        if (this.isInfoTooltipOpen) {
+          this.hideTooltip();
+          this.setTooltipToggle(false);
+        } else {
+          this.showTooltip(<HTMLDivElement>(<SVGElement>event.target).parentElement, tooltipTitle, tooltipDescription);
+          this.setTooltipToggle(true);
+        }
       };
     }
 
     //check if the onblur event is already set if not create it.
     if (!this.information_tooltip_icon.onblur) {
       this.information_tooltip_icon.onblur = () => {
-        this.hideTooltipOnBlur();
+        this.hideTooltip();
+        this.setTooltipToggle(false);
       };
     }
 
@@ -598,11 +671,14 @@ export class Visual implements IVisual {
       TREND SETTINGS
      ##################################################################*/
   }
-
-  private showTooltipOnFocus(event: FocusEvent, title: string, description: string) {
-    const width = (<HTMLDivElement>event.target).clientWidth;
-    const top = (<HTMLDivElement>event.target).offsetTop;
-    const left = (<HTMLDivElement>event.target).offsetLeft + width;
+  private setTooltipToggle(value: boolean) {
+    this.isInfoTooltipOpen = value;
+    this.information_tooltip_icon.ariaExpanded = String(value);
+  }
+  private showTooltip(target: HTMLDivElement, title: string, description: string) {
+    const width = target.clientWidth;
+    const top = target.offsetTop;
+    const left = target.offsetLeft + width;
 
     this.tooltipService.show({
       coordinates: [left, top],
@@ -618,7 +694,7 @@ export class Visual implements IVisual {
     });
   }
 
-  private hideTooltipOnBlur() {
+  private hideTooltip() {
     this.tooltipService.hide({ immediately: true, isTouchEvent: false });
   }
 
@@ -679,7 +755,7 @@ export class Visual implements IVisual {
   }
 
   private setTooltip(
-    tooltipElement: HTMLDivElement,
+    tooltipElement: HTMLElement,
     tooltipService: ITooltipServiceWrapper,
     title: string,
     description: string
@@ -717,10 +793,11 @@ export class Visual implements IVisual {
     return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
   }
 
-  private swapSVGIcon(iconValue: string, currentColor: string, div: HTMLDivElement) {
+  private swapSVGIcon(iconValue: string, currentColor: string, div: HTMLElement) {
     const parser = new DOMParser();
-    var icon = parser.parseFromString(this.getSVGIcon(iconValue, currentColor), "image/svg+xml").firstChild;
-
+    var icon = parser.parseFromString(this.getSVGIcon(iconValue, currentColor), "image/svg+xml")
+      .firstChild as SVGElement;
+    //icon.ariaHidden = "true";
     while (div.firstChild) {
       div.removeChild(div.lastChild);
     }

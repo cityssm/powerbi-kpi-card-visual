@@ -36,6 +36,7 @@ import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructor
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 
 import DataView = powerbi.DataView;
 import IVisualHost = powerbi.extensibility.IVisualHost;
@@ -54,21 +55,21 @@ export class Visual implements IVisual {
   private formattingSettingsService: FormattingSettingsService;
   private main_content: HTMLDivElement;
 
+  private information_tooltip_icon: HTMLDivElement;
+  private information_trend_container: HTMLDivElement;
+  private information_trend_container_icon: HTMLDivElement;
+  private information_trend_container_text: HTMLDivElement;
+
   private header_middle_content: HTMLDivElement;
 
   private header_content: HTMLDivElement;
   private header_text: HTMLParagraphElement;
-  private header_text_icon: HTMLDivElement;
 
   private middle_content: HTMLDivElement;
   private middle_content_center: HTMLDivElement;
   private middle_content_center_icon: HTMLDivElement;
 
   private middle_content_center_text: HTMLDivElement;
-
-  private middle_content_center_trend: HTMLDivElement;
-  private middle_content_center_trend_icon: HTMLDivElement;
-  private middle_content_center_trend_text: HTMLDivElement;
 
   private footer_content: HTMLDivElement;
   private footer_content_left: HTMLDivElement;
@@ -79,12 +80,35 @@ export class Visual implements IVisual {
   private footer_content_right_text_bottom: HTMLParagraphElement;
 
   private tooltipServiceWrapper: ITooltipServiceWrapper;
+  private tooltipService: powerbi.extensibility.ITooltipService;
+
+  private currentTitle: string;
+  private currentDescription: string;
+
+  private isHighContrast: boolean;
+
+  private themeForegroundColour: string;
+  private themeBackgroundColour: string;
+  private themeForegroundSelectedColour: string;
+  private themeLinkColour: string;
 
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
 
     this.target = options.element;
+    this.tooltipService = options.host.tooltipService;
     this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
+
+    let colorPalette: ISandboxExtendedColorPalette = options.host.colorPalette;
+
+    this.isHighContrast = colorPalette.isHighContrast;
+
+    if (this.isHighContrast) {
+      this.themeForegroundColour = colorPalette.foreground.value;
+      this.themeBackgroundColour = colorPalette.background.value;
+      this.themeForegroundSelectedColour = colorPalette.foregroundSelected.value;
+      this.themeLinkColour = colorPalette.hyperlink.value;
+    }
 
     if (document) {
       /*###########################################################
@@ -96,12 +120,6 @@ export class Visual implements IVisual {
       this.header_text = document.createElement("p");
       this.header_text.innerText = "";
 
-      this.header_text_icon = document.createElement("div");
-      this.header_text_icon.className = "header-icon ";
-      this.swapSVGIcon("info", "#808080", this.header_text_icon);
-
-      //APPEND ELEMENTS TO HEADER
-      this.header_content.appendChild(this.header_text_icon);
       this.header_content.appendChild(this.header_text);
 
       /*###########################################################
@@ -113,24 +131,11 @@ export class Visual implements IVisual {
       this.middle_content_center_icon = document.createElement("div");
       this.middle_content_center_icon.className = "middle-icon ";
 
-      this.swapSVGIcon("loading", "#808080", this.middle_content_center_icon);
-
-      /*######################
-        CREATE MIDDLE TREND LINE
-      ########################*/
-      this.middle_content_center_trend_icon = document.createElement("div");
-      this.middle_content_center_trend_icon.className = "middle-trend-icon";
-
-      this.swapSVGIcon("none", "#4CBB17", this.middle_content_center_trend_icon);
-
-      //#ED1C24
-      this.middle_content_center_trend_text = document.createElement("p");
-      this.middle_content_center_trend_text.innerText = "-2.57%";
-
-      this.middle_content_center_trend = document.createElement("div");
-      this.middle_content_center_trend.className = "flex-trend-container";
-      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_text);
-      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_icon);
+      this.swapSVGIcon(
+        "loading",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.middle_content_center_icon
+      );
 
       /*######################
         ATTACH MIDDLE COMPONENTS
@@ -140,7 +145,6 @@ export class Visual implements IVisual {
       this.middle_content_center.className = "middle-content ";
       this.middle_content_center.appendChild(this.middle_content_center_icon);
       this.middle_content_center.appendChild(this.middle_content_center_text);
-      this.middle_content_center.appendChild(this.middle_content_center_trend);
 
       this.middle_content = document.createElement("div");
       this.middle_content.className = "flex-container-middle";
@@ -162,7 +166,11 @@ export class Visual implements IVisual {
       //############### CREATE LEFT FOOTER SECTION ###############
       this.footer_content_left_icon = document.createElement("div");
       this.footer_content_left_icon.className = "footer-icon ";
-      this.swapSVGIcon("loading", "#FFFFFF", this.footer_content_left_icon);
+      this.swapSVGIcon(
+        "loading",
+        this.isHighContrast ? this.themeForegroundColour : "#FFFFFF",
+        this.footer_content_left_icon
+      );
 
       this.footer_content_left = document.createElement("div");
       this.footer_content_left.className = "flex-item-left";
@@ -190,6 +198,50 @@ export class Visual implements IVisual {
       this.footer_content.appendChild(this.footer_content_left);
       this.footer_content.appendChild(this.footer_content_right);
 
+      /*##################################################################
+        CREATE TREND ELEMENT ON MAIN
+      ##################################################################*/
+      this.information_trend_container_icon = document.createElement("div");
+      this.information_trend_container_icon.className = "middle-trend-icon";
+
+      this.swapSVGIcon(
+        "arrow-down",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_trend_container_icon
+      );
+
+      this.information_trend_container_text = document.createElement("p");
+      this.information_trend_container_text.innerText = "-2.57%";
+
+      this.information_trend_container = document.createElement("div");
+      this.information_trend_container.className = "flex-trend-container";
+      this.information_trend_container.appendChild(this.information_trend_container_text);
+      this.information_trend_container.appendChild(this.information_trend_container_icon);
+
+      /*##################################################################
+      TREND FONT DEFAULTS
+     ##################################################################*/
+
+      this.information_trend_container_text.style.margin = "auto";
+      this.information_trend_container_text.style.fontFamily = "Arial";
+      this.information_trend_container_text.style.fontSize = "14px";
+      this.information_trend_container_text.style.fontStyle = "italic";
+      this.information_trend_container_text.style.fontWeight = "normal";
+      this.information_trend_container_text.style.textDecoration = "normal";
+
+      /*##################################################################
+      INFORMATION ICON ON MAIN
+     ##################################################################*/
+
+      this.information_tooltip_icon = document.createElement("div");
+      this.information_tooltip_icon.className = "header-icon ";
+
+      this.swapSVGIcon(
+        "info",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_tooltip_icon
+      );
+
       /*###########################################################
         CREATE MAIN CONTAINER ELEMENTS
       ###########################################################*/
@@ -199,20 +251,32 @@ export class Visual implements IVisual {
 
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
+
+      this.main_content.appendChild(this.information_tooltip_icon);
+      this.main_content.appendChild(this.information_trend_container);
       //this.target.hidden = true;
 
       /*###########################################################
         SET DEFAULT COLOURS/LOADING
       ###########################################################*/
-      this.main_content.style.borderColor = "#808080";
-      this.main_content.style.backgroundColor = "#808080";
 
-      this.header_middle_content.style.backgroundColor = "#E6E6E6";
+      this.main_content.style.borderColor = this.isHighContrast ? this.themeForegroundColour : "#808080";
+      this.main_content.style.backgroundColor = this.isHighContrast ? this.themeBackgroundColour : "#808080";
 
-      this.middle_content_center_text.style.color = "#000000";
-      this.header_text.style.color = "#000000";
-      this.footer_content_right_text_top.style.color = "#FFFFFF";
-      this.footer_content_right_text_bottom.style.color = "#FFFFFF";
+      this.header_middle_content.style.backgroundColor = this.isHighContrast ? this.themeBackgroundColour : "#E6E6E6";
+
+      this.middle_content_center_text.style.color = this.isHighContrast ? this.themeBackgroundColour : "#000000";
+      this.header_text.style.color = this.isHighContrast ? this.themeBackgroundColour : "#000000";
+      this.footer_content_right_text_top.style.color = this.isHighContrast ? this.themeBackgroundColour : "#FFFFFF";
+      this.footer_content_right_text_bottom.style.color = this.isHighContrast ? this.themeBackgroundColour : "#FFFFFF";
+
+      if (this.isHighContrast) {
+        this.middle_content.style.borderBottom = "3px";
+        this.middle_content.style.borderBottomColor = this.themeForegroundColour;
+        this.middle_content.style.borderBottomStyle = "solid";
+
+        this.information_trend_container_text.style.color = this.themeForegroundColour;
+      }
 
       let width: number = options.element.clientWidth;
       let height: number = options.element.clientHeight;
@@ -251,17 +315,6 @@ export class Visual implements IVisual {
       this.middle_content_center.style.float = "";
 
       /*##################################################################
-      TREND FONT DEFAULTS
-     ##################################################################*/
-
-      this.middle_content_center_trend_text.style.margin = "auto";
-      this.middle_content_center_trend_text.style.fontFamily = "Arial";
-      this.middle_content_center_trend_text.style.fontSize = "14px";
-      this.middle_content_center_trend_text.style.fontStyle = "italic";
-      this.middle_content_center_trend_text.style.fontWeight = "normal";
-      this.middle_content_center_trend_text.style.textDecoration = "normal";
-
-      /*##################################################################
       FOOTER TOP TEXT DEFAULTS
      ##################################################################*/
 
@@ -284,6 +337,23 @@ export class Visual implements IVisual {
       this.footer_content_right_text_bottom.style.fontWeight = "normal";
       this.footer_content_right_text_bottom.style.textDecoration = "normal";
       this.footer_content_right_text_bottom.style.textAlign = "left";
+
+      /*############################################
+      ACCESSIBILITY
+      ############################################*/
+
+      this.header_text.tabIndex = 1;
+      this.middle_content_center_text.tabIndex = 2;
+      this.information_tooltip_icon.tabIndex = 3;
+      this.information_trend_container.tabIndex = 4;
+      this.footer_content_right_text_top.tabIndex = 5;
+      this.footer_content_right_text_bottom.tabIndex = 6;
+
+      this.header_content.ariaLabel = "Key Performance Indicator Title";
+      this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
+
+      this.information_tooltip_icon.ariaLabel = "Additional Information";
+      this.information_trend_container.ariaLabel = "Difference between last period";
 
       this.target.appendChild(this.main_content);
     }
@@ -313,16 +383,24 @@ export class Visual implements IVisual {
     /*##################################################################
       SET COLOURS
      ##################################################################*/
-    const primaryColour: string = styleCard.primaryColour.value.value as string;
-    const secondaryColour: string = styleCard.secondaryColour.value.value as string;
-    const centerIconColour: string = styleCard.centerIconColour.value.value as string;
-    const bottomIconColour: string = styleCard.bottomLeftIconColour.value.value as string;
+    const primaryColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.primaryColour.value.value as string);
+    const secondaryColour: string = this.isHighContrast
+      ? this.themeBackgroundColour
+      : (styleCard.secondaryColour.value.value as string);
+    const centerIconColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.centerIconColour.value.value as string);
+    const bottomIconColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.bottomLeftIconColour.value.value as string);
 
-    const trendUpColour: string = "#4CBB17";
-    const trendDownColour: string = "#ED1C24";
+    const trendUpColour: string = this.isHighContrast ? this.themeForegroundColour : "#4CBB17";
+    const trendDownColour: string = this.isHighContrast ? this.themeForegroundColour : "#ED1C24";
 
     this.main_content.style.borderColor = primaryColour;
-    this.main_content.style.backgroundColor = primaryColour;
+    this.main_content.style.backgroundColor = this.isHighContrast ? secondaryColour : primaryColour;
 
     this.header_middle_content.style.backgroundColor = secondaryColour;
 
@@ -332,6 +410,13 @@ export class Visual implements IVisual {
     this.footer_content_right_text_top.style.color = bottomIconColour;
     this.footer_content_right_text_bottom.style.color = bottomIconColour;
 
+    if (this.isHighContrast) {
+      this.middle_content.style.borderBottom = "3px";
+      this.middle_content.style.borderBottomColor = primaryColour;
+      this.middle_content.style.borderBottomStyle = "solid";
+
+      this.information_trend_container_text.style.color = primaryColour;
+    }
     /*##################################################################
       SET BORDER RADIUS
      ##################################################################*/
@@ -343,8 +428,8 @@ export class Visual implements IVisual {
 
     if (styleCard.borderRadius.value >= 20) {
       const newPadding = styleCard.borderRadius.value - 10;
-      this.header_text_icon.style.paddingLeft = newPadding + "px";
-      this.middle_content_center_trend.style.paddingRight = newPadding + "px";
+      this.information_tooltip_icon.style.paddingLeft = newPadding + "px";
+      this.information_trend_container.style.paddingRight = newPadding + "px";
     }
 
     /*##################################################################
@@ -369,7 +454,7 @@ export class Visual implements IVisual {
       this.swapSVGIcon(bottomIconSelected, bottomIconColour, this.footer_content_left_icon);
     }
 
-    this.swapSVGIcon("info", primaryColour, this.header_text_icon);
+    this.swapSVGIcon("info", primaryColour, this.information_tooltip_icon);
 
     /*##################################################################
       TITLE FONT DETAILS
@@ -452,7 +537,6 @@ export class Visual implements IVisual {
     this.footer_content_right_text_bottom.style.textAlign = footerTextBottomAlignment;
 
     const tableDataView = options.dataViews[0].table;
-    //verify that atleast one row exists otherwise we will get some runtime errors.
 
     //POSITION 0: HEADING
     //POSITION 1: CENTER VALUE
@@ -469,21 +553,73 @@ export class Visual implements IVisual {
     this.toggleTrendElement(
       tableDataView,
       4,
-      this.middle_content_center_trend,
-      this.middle_content_center_trend_text,
-      this.middle_content_center_trend_icon,
+      this.information_trend_container,
+      this.information_trend_container_text,
+      this.information_trend_container_icon,
       trendIconSelected,
       trendUpColour,
       trendDownColour,
       5
     );
+
+    const tooltipTitle = this.getData(tableDataView, 0);
+    const tooltipDescription = this.getData(tableDataView, 6);
+    const tooltipValuesChanged = tooltipTitle !== this.currentTitle || tooltipDescription !== this.currentDescription;
     /*##################################################################
       TOOLTIP SETTINGS
      ##################################################################*/
-    this.setTooltip(tableDataView, 6, this.header_text_icon, 0);
+    this.setTooltip(this.information_tooltip_icon, this.tooltipServiceWrapper, tooltipTitle, tooltipDescription);
+
+    //If title or description have changed remove the onfocus event and recreate it.
+    //otherwise the title and description will be wrong
+    //only remove the event if one exists
+    if (this.information_tooltip_icon.onfocus && tooltipValuesChanged) {
+      this.information_tooltip_icon.onfocus = null;
+    }
+
+    //check if the onfocus event is already set if not create it.
+    if (!this.information_tooltip_icon.onfocus) {
+      this.currentTitle = tooltipTitle;
+      this.currentDescription = tooltipDescription;
+
+      this.information_tooltip_icon.onfocus = (event) => {
+        this.showTooltipOnFocus(event, tooltipTitle, tooltipDescription);
+      };
+    }
+
+    //check if the onblur event is already set if not create it.
+    if (!this.information_tooltip_icon.onblur) {
+      this.information_tooltip_icon.onblur = () => {
+        this.hideTooltipOnBlur();
+      };
+    }
+
     /*##################################################################
       TREND SETTINGS
      ##################################################################*/
+  }
+
+  private showTooltipOnFocus(event: FocusEvent, title: string, description: string) {
+    const width = (<HTMLDivElement>event.target).clientWidth;
+    const top = (<HTMLDivElement>event.target).offsetTop;
+    const left = (<HTMLDivElement>event.target).offsetLeft + width;
+
+    this.tooltipService.show({
+      coordinates: [left, top],
+      isTouchEvent: false,
+      dataItems: [
+        {
+          displayName: "",
+          value: description,
+          header: title,
+        },
+      ],
+      identities: [],
+    });
+  }
+
+  private hideTooltipOnBlur() {
+    this.tooltipService.hide({ immediately: true, isTouchEvent: false });
   }
 
   private getData(tableDataView: powerbi.DataViewTable, position: number) {
@@ -543,27 +679,21 @@ export class Visual implements IVisual {
   }
 
   private setTooltip(
-    tableDataView: powerbi.DataViewTable,
-    tooltipPosition: number,
     tooltipElement: HTMLDivElement,
-    headingPosition: number
+    tooltipService: ITooltipServiceWrapper,
+    title: string,
+    description: string
   ) {
     if (tooltipElement) {
-      const description = this.getData(tableDataView, tooltipPosition);
-      const heading = this.getData(tableDataView, headingPosition);
-
-      this.tooltipServiceWrapper.addTooltip(d3Select(tooltipElement), () => {
+      tooltipService.addTooltip(d3Select(tooltipElement), () => {
         return [
           {
             displayName: "",
             value: description,
-            color: "#FFFFFF",
-            header: heading,
+            header: title,
           },
         ];
       });
-    } else {
-      this.tooltipServiceWrapper.hide();
     }
   }
 

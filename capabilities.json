@@ -1,6 +1,6 @@
 {
   "suppressDefaultTitle": true,
-
+  "supportsKeyboardFocus": true,
   "dataRoles": [
     {
       "name": "values",

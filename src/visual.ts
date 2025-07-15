@@ -70,8 +70,10 @@ export class Visual implements IVisual {
   private middle_content: HTMLDivElement;
   private middle_content_center: HTMLDivElement;
   private middle_content_center_icon: HTMLDivElement;
-
   private middle_content_center_text: HTMLDivElement;
+
+  private middle_content_info: HTMLDivElement;
+  private middle_content_center_info: HTMLDivElement;
 
   private footer_content: HTMLDivElement;
   private footer_content_left: HTMLDivElement;
@@ -137,6 +139,7 @@ export class Visual implements IVisual {
       ###########################################################*/
       this.middle_content_center_text = document.createElement("p");
       this.middle_content_center_text.innerText = "";
+      //this.middle_content_center_text.style.margin = "auto";
 
       this.middle_content_center_icon = document.createElement("div");
       this.middle_content_center_icon.className = "middle-icon-large";
@@ -147,6 +150,66 @@ export class Visual implements IVisual {
         this.middle_content_center_icon
       );
 
+      /*##################################################################
+       CREATE MIDDLE INFORMATION ICON
+     ##################################################################*/
+
+      this.information_tooltip_icon = document.createElement("button");
+      this.information_tooltip_icon.className = "middle-info-button";
+
+      this.swapSVGIcon(
+        "info",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_tooltip_icon
+      );
+
+      this.information_tooltip_container = document.createElement("div");
+      this.information_tooltip_container.className = "middle-info-container";
+
+      this.information_tooltip_container.appendChild(this.information_tooltip_icon);
+
+      /*##################################################################
+        CREATE TREND ELEMENT ON MAIN
+      ##################################################################*/
+      this.information_trend_container_icon = document.createElement("div");
+      this.information_trend_container_icon.className = "middle-trend-icon";
+
+      this.swapSVGIcon(
+        "arrow-down",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_trend_container_icon
+      );
+
+      this.information_trend_container_text = document.createElement("p");
+      this.information_trend_container_text.innerText = "-2.57%";
+
+      this.information_trend_container = document.createElement("div");
+      this.information_trend_container.className = "middle-trend-container";
+
+      this.information_trend_container_button = document.createElement("button");
+      this.information_trend_container_button.className = "middle-trend-button";
+
+      this.information_trend_container_button.appendChild(this.information_trend_container_text);
+      this.information_trend_container_button.appendChild(this.information_trend_container_icon);
+
+      this.information_trend_container.appendChild(this.information_trend_container_button);
+
+      this.middle_content_center_info = document.createElement("div");
+      this.middle_content_center_info.className = "middle-content-info";
+      this.middle_content_center_info.appendChild(this.information_tooltip_container);
+      this.middle_content_center_info.appendChild(this.information_trend_container);
+
+      /*##################################################################
+      TREND FONT DEFAULTS
+     ##################################################################*/
+
+      this.information_trend_container_text.style.margin = "auto";
+      this.information_trend_container_text.style.fontFamily = "Arial";
+      this.information_trend_container_text.style.fontSize = "15px";
+      this.information_trend_container_text.style.fontStyle = "italic";
+      this.information_trend_container_text.style.fontWeight = "normal";
+      this.information_trend_container_text.style.textDecoration = "normal";
+
       /*######################
         ATTACH MIDDLE COMPONENTS
       ########################*/
@@ -155,6 +218,7 @@ export class Visual implements IVisual {
       this.middle_content_center.className = "middle-content ";
       this.middle_content_center.appendChild(this.middle_content_center_icon);
       this.middle_content_center.appendChild(this.middle_content_center_text);
+      //this.middle_content_center.appendChild(this.middle_content_center_info);
 
       this.middle_content = document.createElement("div");
       this.middle_content.className = "flex-container-middle";
@@ -168,6 +232,12 @@ export class Visual implements IVisual {
 
       this.header_middle_content.appendChild(this.header_content);
       this.header_middle_content.appendChild(this.middle_content);
+
+      this.middle_content_info = document.createElement("div");
+      //this.middle_content_info.className = "flex-container-middle";
+      this.middle_content_info.appendChild(this.middle_content_center_info);
+
+      this.header_middle_content.appendChild(this.middle_content_info);
 
       /*###########################################################
         CREATE FOOTER ELEMENTS
@@ -208,60 +278,6 @@ export class Visual implements IVisual {
       this.footer_content.appendChild(this.footer_content_left);
       this.footer_content.appendChild(this.footer_content_right);
 
-      /*##################################################################
-        CREATE TREND ELEMENT ON MAIN
-      ##################################################################*/
-      this.information_trend_container_icon = document.createElement("div");
-      this.information_trend_container_icon.className = "flex-trend-icon";
-
-      this.swapSVGIcon(
-        "arrow-down",
-        this.isHighContrast ? this.themeForegroundColour : "#808080",
-        this.information_trend_container_icon
-      );
-
-      this.information_trend_container_text = document.createElement("p");
-      this.information_trend_container_text.innerText = "-2.57%";
-
-      this.information_trend_container = document.createElement("div");
-      this.information_trend_container.className = "flex-trend-container";
-
-      this.information_trend_container_button = document.createElement("button");
-      this.information_trend_container_button.className = "flex-trend-button";
-
-      this.information_trend_container_button.appendChild(this.information_trend_container_text);
-      this.information_trend_container_button.appendChild(this.information_trend_container_icon);
-
-      this.information_trend_container.appendChild(this.information_trend_container_button);
-
-      /*##################################################################
-      TREND FONT DEFAULTS
-     ##################################################################*/
-
-      this.information_trend_container_text.style.margin = "auto";
-      this.information_trend_container_text.style.fontFamily = "Arial";
-      this.information_trend_container_text.style.fontSize = "15px";
-      this.information_trend_container_text.style.fontStyle = "italic";
-      this.information_trend_container_text.style.fontWeight = "normal";
-      this.information_trend_container_text.style.textDecoration = "normal";
-
-      /*##################################################################
-      INFORMATION ICON ON MAIN
-     ##################################################################*/
-
-      this.information_tooltip_icon = document.createElement("button");
-      this.information_tooltip_icon.className = "info-icon ";
-
-      this.swapSVGIcon(
-        "info",
-        this.isHighContrast ? this.themeForegroundColour : "#808080",
-        this.information_tooltip_icon
-      );
-
-      this.information_tooltip_container = document.createElement("div");
-      this.information_tooltip_container.className = "info-container";
-
-      this.information_tooltip_container.appendChild(this.information_tooltip_icon);
       /*###########################################################
         CREATE MAIN CONTAINER ELEMENTS
       ###########################################################*/
@@ -272,8 +288,8 @@ export class Visual implements IVisual {
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
 
-      this.main_content.appendChild(this.information_tooltip_container);
-      this.main_content.appendChild(this.information_trend_container);
+      //this.main_content.appendChild(this.information_tooltip_container);
+      //this.main_content.appendChild(this.information_trend_container);
       //this.target.hidden = true;
 
       /*###########################################################
@@ -317,9 +333,9 @@ export class Visual implements IVisual {
       this.header_text.style.fontStyle = "normal";
       this.header_text.style.fontWeight = "bold";
       this.header_text.style.textDecoration = "normal";
+      this.header_text.style.textAlign = "center";
 
       this.header_content.style.justifyContent = "center";
-      this.header_text.style.textAlign = "center";
 
       /*##################################################################
       VALUE FONT DEFAULTS

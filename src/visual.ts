@@ -133,6 +133,7 @@ export class Visual implements IVisual {
       this.header_content.className = "flex-container-header";
       //CREATE TEXT ELEMENT
       this.header_text = document.createElement("p");
+      this.header_text.id = "title";
       this.header_text.innerText = "";
 
       this.header_content.appendChild(this.header_text);
@@ -417,8 +418,9 @@ export class Visual implements IVisual {
       this.information_trend_container_icon.ariaHidden = "true";
       this.information_tooltip_container_button_icon.ariaHidden = "true";
 
-      this.header_content.ariaLabel = "Key Performance Indicator Title";
+      //this.header_content.ariaLabel = "Key Performance Indicator Title";
       this.header_content.role = "heading";
+      //this.header_content.ara = "Key Performance Indicator Title";
 
       this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
       this.middle_content_center.role = "paragraph";

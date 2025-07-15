@@ -55,8 +55,10 @@ export class Visual implements IVisual {
   private formattingSettingsService: FormattingSettingsService;
   private main_content: HTMLDivElement;
 
-  private information_tooltip_icon: HTMLButtonElement;
   private information_tooltip_container: HTMLDivElement;
+  private information_tooltip_container_button: HTMLButtonElement;
+  private information_tooltip_container_button_icon: HTMLDivElement;
+
   private information_trend_container: HTMLDivElement;
   private information_trend_container_button: HTMLButtonElement;
   private information_trend_container_icon: HTMLDivElement;
@@ -74,6 +76,7 @@ export class Visual implements IVisual {
 
   private middle_content_info: HTMLDivElement;
   private middle_content_center_info: HTMLDivElement;
+  private middle_content_center_info_grow: HTMLDivElement;
 
   private footer_content: HTMLDivElement;
   private footer_content_left: HTMLDivElement;
@@ -154,19 +157,38 @@ export class Visual implements IVisual {
        CREATE MIDDLE INFORMATION ICON
      ##################################################################*/
 
-      this.information_tooltip_icon = document.createElement("button");
-      this.information_tooltip_icon.className = "middle-info-button";
+      this.information_tooltip_container_button_icon = document.createElement("div");
+      this.information_tooltip_container_button_icon.className = "middle-info-icon";
 
       this.swapSVGIcon(
         "info",
         this.isHighContrast ? this.themeForegroundColour : "#808080",
-        this.information_tooltip_icon
+        this.information_tooltip_container_button_icon
       );
 
       this.information_tooltip_container = document.createElement("div");
       this.information_tooltip_container.className = "middle-info-container";
 
-      this.information_tooltip_container.appendChild(this.information_tooltip_icon);
+      this.information_tooltip_container_button = document.createElement("button");
+      this.information_tooltip_container_button.className = "middle-info-button";
+
+      this.information_tooltip_container_button.appendChild(this.information_tooltip_container_button_icon);
+
+      this.information_tooltip_container.appendChild(this.information_tooltip_container_button);
+
+      /*this.middle_content_center_info = document.createElement("div");
+      this.middle_content_center_info.className = "middle-content-info";
+      this.middle_content_center_info.appendChild(this.information_tooltip_container);
+      this.middle_content_center_info.appendChild(this.information_trend_container);*/
+
+      /*
+      this.information_tooltip_button = document.createElement("div");
+      this.information_tooltip_button.appendChild(this.information_tooltip_button_icon);
+
+      this.information_tooltip_container = document.createElement("div");
+      this.information_tooltip_container.className = "middle-info-container";
+
+      this.information_tooltip_container.appendChild(this.information_tooltip_button);*/
 
       /*##################################################################
         CREATE TREND ELEMENT ON MAIN
@@ -194,9 +216,13 @@ export class Visual implements IVisual {
 
       this.information_trend_container.appendChild(this.information_trend_container_button);
 
+      this.middle_content_center_info_grow = document.createElement("div");
+      this.middle_content_center_info_grow.className = "middle-info-grow";
+      this.middle_content_center_info_grow.appendChild(this.information_tooltip_container);
+
       this.middle_content_center_info = document.createElement("div");
       this.middle_content_center_info.className = "middle-content-info";
-      this.middle_content_center_info.appendChild(this.information_tooltip_container);
+      this.middle_content_center_info.appendChild(this.middle_content_center_info_grow);
       this.middle_content_center_info.appendChild(this.information_trend_container);
 
       /*##################################################################
@@ -380,7 +406,7 @@ export class Visual implements IVisual {
 
       this.header_content.tabIndex = 2;
       this.middle_content_center_text.tabIndex = 3;
-      this.information_tooltip_icon.tabIndex = 4;
+      this.information_tooltip_container_button.tabIndex = 4;
       this.information_trend_container_button.tabIndex = 5;
       this.footer_content_right_text_top.tabIndex = 6;
       this.footer_content_right_text_bottom.tabIndex = 7;
@@ -389,6 +415,7 @@ export class Visual implements IVisual {
       this.footer_content_left_icon.ariaHidden = "true";
 
       this.information_trend_container_icon.ariaHidden = "true";
+      this.information_tooltip_container_button_icon.ariaHidden = "true";
 
       this.header_content.ariaLabel = "Key Performance Indicator Title";
       this.header_content.role = "heading";
@@ -396,14 +423,14 @@ export class Visual implements IVisual {
       this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
       this.middle_content_center.role = "paragraph";
 
-      this.information_tooltip_icon.ariaLabel = "Additional Information";
-      this.information_tooltip_icon.role = "button";
-      this.information_tooltip_icon.ariaHasPopup = "true";
-      this.information_tooltip_icon.ariaExpanded = String(this.isInfoTooltipOpen);
-      this.information_tooltip_icon.onclick = () => {
+      this.information_tooltip_container_button.ariaLabel = "Additional Information";
+      this.information_tooltip_container_button.role = "button";
+      this.information_tooltip_container_button.ariaHasPopup = "true";
+      this.information_tooltip_container_button.ariaExpanded = String(this.isInfoTooltipOpen);
+      this.information_tooltip_container_button.onclick = () => {
         //console.log("ORIGINAL CLICK");
       };
-      this.information_tooltip_icon.onkeydown = () => {
+      this.information_tooltip_container_button.onkeydown = () => {
         //console.log("ORIGINAL KEYDOWN");
       };
 
@@ -495,7 +522,7 @@ export class Visual implements IVisual {
 
     if (styleCard.borderRadius.value >= 20) {
       const newPadding = styleCard.borderRadius.value - 10;
-      this.information_tooltip_icon.style.paddingLeft = newPadding + "px";
+      this.information_tooltip_container.style.paddingLeft = newPadding + "px";
       this.information_trend_container.style.paddingRight = newPadding + "px";
     }
 
@@ -521,7 +548,7 @@ export class Visual implements IVisual {
       this.swapSVGIcon(bottomIconSelected, bottomIconColour, this.footer_content_left_icon);
     }
 
-    this.swapSVGIcon("info", primaryColour, this.information_tooltip_icon);
+    this.swapSVGIcon("info", primaryColour, this.information_tooltip_container_button_icon);
 
     const middleIconSize: string = styleCard.centerIconSize.value.value as string;
     const trendIconSize: string = styleCard.bottomLeftIconSize.value.value as string;
@@ -651,7 +678,7 @@ export class Visual implements IVisual {
 
     //INFO TOOLTIP
     this.setTooltip(
-      this.information_tooltip_icon,
+      this.information_tooltip_container_button,
       this.tooltipServiceWrapper,
       tooltipTitleInfo,
       tooltipDescriptionInfo
@@ -663,31 +690,31 @@ export class Visual implements IVisual {
     if (tooltipInfoChanged) {
       this.currentTooltipInfoTitle = tooltipTitleInfo;
       this.currentTooltipInfoDescription = tooltipDescriptionInfo;
-      this.information_tooltip_icon.onfocus = null;
-      this.information_tooltip_icon.onkeydown = null;
-      this.information_tooltip_icon.onclick = null;
+      this.information_tooltip_container_button.onfocus = null;
+      this.information_tooltip_container_button.onkeydown = null;
+      this.information_tooltip_container_button.onclick = null;
     }
 
     //check if the onfocus event is already set if not create it.
-    if (!this.information_tooltip_icon.onfocus) {
-      this.information_tooltip_icon.onfocus = (event) => {
+    if (!this.information_tooltip_container_button.onfocus) {
+      this.information_tooltip_container_button.onfocus = (event) => {
         this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
     }
 
-    if (!this.information_tooltip_icon.onkeydown) {
-      this.information_tooltip_icon.onkeydown = (event) => {
+    if (!this.information_tooltip_container_button.onkeydown) {
+      this.information_tooltip_container_button.onkeydown = (event) => {
         this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
     }
 
-    if (!this.information_tooltip_icon.onclick) {
-      this.information_tooltip_icon.onclick = (event) => {
+    if (!this.information_tooltip_container_button.onclick) {
+      this.information_tooltip_container_button.onclick = (event) => {
         this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
       //check if the onblur event is already set if not create it.
-      if (!this.information_tooltip_icon.onblur) {
-        this.information_tooltip_icon.onblur = () => {
+      if (!this.information_tooltip_container_button.onblur) {
+        this.information_tooltip_container_button.onblur = () => {
           this.hideTooltip();
           this.setIconTooltipToggle(false);
         };
@@ -749,6 +776,7 @@ export class Visual implements IVisual {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
 
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+      //console.log(target);
 
       if (this.isInfoTooltipOpen) {
         this.hideTooltip();
@@ -768,6 +796,7 @@ export class Visual implements IVisual {
     ) {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+      //console.log(target);
 
       if (this.isTrendTooltipOpen) {
         this.hideTooltip();
@@ -781,7 +810,7 @@ export class Visual implements IVisual {
 
   private setIconTooltipToggle(value: boolean) {
     this.isInfoTooltipOpen = value;
-    this.information_tooltip_icon.ariaExpanded = String(value);
+    this.information_tooltip_container_button.ariaExpanded = String(value);
   }
 
   private setTrendTooltipToggle(value: boolean) {

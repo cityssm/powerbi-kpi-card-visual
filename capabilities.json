@@ -158,6 +158,16 @@
             }
           }
         },
+        "centerIcon": {
+          "type": {
+            "enumeration": []
+          }
+        },
+        "centerIconSize": {
+          "type": {
+            "enumeration": []
+          }
+        },
         "bottomLeftIconColour": {
           "type": {
             "fill": {
@@ -172,7 +182,7 @@
             "enumeration": []
           }
         },
-        "centerIcon": {
+        "bottomLeftIconSize": {
           "type": {
             "enumeration": []
           }

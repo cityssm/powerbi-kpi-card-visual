@@ -56,7 +56,9 @@ export class Visual implements IVisual {
   private main_content: HTMLDivElement;
 
   private information_tooltip_icon: HTMLButtonElement;
+  private information_tooltip_container: HTMLDivElement;
   private information_trend_container: HTMLDivElement;
+  private information_trend_container_button: HTMLButtonElement;
   private information_trend_container_icon: HTMLDivElement;
   private information_trend_container_text: HTMLDivElement;
 
@@ -82,8 +84,11 @@ export class Visual implements IVisual {
   private tooltipServiceWrapper: ITooltipServiceWrapper;
   private tooltipService: powerbi.extensibility.ITooltipService;
 
-  private currentTitle: string;
-  private currentDescription: string;
+  private currentTooltipInfoTitle: string;
+  private currentTooltipInfoDescription: string;
+
+  private currentTooltipTrendTitle: string;
+  private currentTooltipTrendDescription: string;
 
   private isHighContrast: boolean;
 
@@ -93,6 +98,7 @@ export class Visual implements IVisual {
   private themeLinkColour: string;
 
   private isInfoTooltipOpen: boolean = false;
+  private isTrendTooltipOpen: boolean = false;
 
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
@@ -133,7 +139,7 @@ export class Visual implements IVisual {
       this.middle_content_center_text.innerText = "";
 
       this.middle_content_center_icon = document.createElement("div");
-      this.middle_content_center_icon.className = "middle-icon ";
+      this.middle_content_center_icon.className = "middle-icon-large";
 
       this.swapSVGIcon(
         "loading",
@@ -169,7 +175,7 @@ export class Visual implements IVisual {
 
       //############### CREATE LEFT FOOTER SECTION ###############
       this.footer_content_left_icon = document.createElement("div");
-      this.footer_content_left_icon.className = "footer-icon ";
+      this.footer_content_left_icon.className = "footer-icon-large";
       this.swapSVGIcon(
         "loading",
         this.isHighContrast ? this.themeForegroundColour : "#FFFFFF",
@@ -206,7 +212,7 @@ export class Visual implements IVisual {
         CREATE TREND ELEMENT ON MAIN
       ##################################################################*/
       this.information_trend_container_icon = document.createElement("div");
-      this.information_trend_container_icon.className = "middle-trend-icon";
+      this.information_trend_container_icon.className = "flex-trend-icon";
 
       this.swapSVGIcon(
         "arrow-down",
@@ -219,8 +225,14 @@ export class Visual implements IVisual {
 
       this.information_trend_container = document.createElement("div");
       this.information_trend_container.className = "flex-trend-container";
-      this.information_trend_container.appendChild(this.information_trend_container_text);
-      this.information_trend_container.appendChild(this.information_trend_container_icon);
+
+      this.information_trend_container_button = document.createElement("button");
+      this.information_trend_container_button.className = "flex-trend-button";
+
+      this.information_trend_container_button.appendChild(this.information_trend_container_text);
+      this.information_trend_container_button.appendChild(this.information_trend_container_icon);
+
+      this.information_trend_container.appendChild(this.information_trend_container_button);
 
       /*##################################################################
       TREND FONT DEFAULTS
@@ -228,7 +240,7 @@ export class Visual implements IVisual {
 
       this.information_trend_container_text.style.margin = "auto";
       this.information_trend_container_text.style.fontFamily = "Arial";
-      this.information_trend_container_text.style.fontSize = "14px";
+      this.information_trend_container_text.style.fontSize = "15px";
       this.information_trend_container_text.style.fontStyle = "italic";
       this.information_trend_container_text.style.fontWeight = "normal";
       this.information_trend_container_text.style.textDecoration = "normal";
@@ -238,7 +250,7 @@ export class Visual implements IVisual {
      ##################################################################*/
 
       this.information_tooltip_icon = document.createElement("button");
-      this.information_tooltip_icon.className = "header-icon ";
+      this.information_tooltip_icon.className = "info-icon ";
 
       this.swapSVGIcon(
         "info",
@@ -246,6 +258,10 @@ export class Visual implements IVisual {
         this.information_tooltip_icon
       );
 
+      this.information_tooltip_container = document.createElement("div");
+      this.information_tooltip_container.className = "info-container";
+
+      this.information_tooltip_container.appendChild(this.information_tooltip_icon);
       /*###########################################################
         CREATE MAIN CONTAINER ELEMENTS
       ###########################################################*/
@@ -256,7 +272,7 @@ export class Visual implements IVisual {
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
 
-      this.main_content.appendChild(this.information_tooltip_icon);
+      this.main_content.appendChild(this.information_tooltip_container);
       this.main_content.appendChild(this.information_trend_container);
       //this.target.hidden = true;
 
@@ -349,7 +365,7 @@ export class Visual implements IVisual {
       this.header_content.tabIndex = 2;
       this.middle_content_center_text.tabIndex = 3;
       this.information_tooltip_icon.tabIndex = 4;
-      this.information_trend_container.tabIndex = 5;
+      this.information_trend_container_button.tabIndex = 5;
       this.footer_content_right_text_top.tabIndex = 6;
       this.footer_content_right_text_bottom.tabIndex = 7;
 
@@ -369,14 +385,23 @@ export class Visual implements IVisual {
       this.information_tooltip_icon.ariaHasPopup = "true";
       this.information_tooltip_icon.ariaExpanded = String(this.isInfoTooltipOpen);
       this.information_tooltip_icon.onclick = () => {
-        console.log("ORIGINAL CLICK");
+        //console.log("ORIGINAL CLICK");
       };
       this.information_tooltip_icon.onkeydown = () => {
-        console.log("ORIGINAL KEYDOWN");
+        //console.log("ORIGINAL KEYDOWN");
       };
 
-      this.information_trend_container.ariaLabel = "Difference between last period";
-      this.information_trend_container.role = "note";
+      this.information_trend_container_button.ariaLabel = "Difference between last period";
+      this.information_trend_container_button.role = "button";
+      this.information_trend_container_button.ariaHasPopup = "true";
+      this.information_trend_container_button.ariaExpanded = String(this.isTrendTooltipOpen);
+
+      this.information_trend_container_button.onclick = () => {
+        //console.log("ORIGINAL CLICK");
+      };
+      this.information_trend_container_button.onkeydown = () => {
+        //console.log("ORIGINAL KEYDOWN");
+      };
 
       this.footer_content_right_text_top.role = "paragraph";
       this.footer_content_right_text_bottom.role = "paragraph";
@@ -482,6 +507,12 @@ export class Visual implements IVisual {
 
     this.swapSVGIcon("info", primaryColour, this.information_tooltip_icon);
 
+    const middleIconSize: string = styleCard.centerIconSize.value.value as string;
+    const trendIconSize: string = styleCard.bottomLeftIconSize.value.value as string;
+
+    this.middle_content_center_icon.className = middleIconSize;
+    this.footer_content_left_icon.className = trendIconSize;
+
     /*##################################################################
       TITLE FONT DETAILS
      ##################################################################*/
@@ -571,7 +602,8 @@ export class Visual implements IVisual {
     //POSITION 4: INCREASE/DECREASE
     //POSITION 5: INCREASE/DECREASE DIRECTION
     //POSITION 6: INFO DESCRIPTION
-    //POSITION 7: ACCESSIBILITY
+    //POSITION 7: TREND DESCRIPTION
+    //POSITION 8: ACCESSIBILITY
     this.toggleParagraphElement(tableDataView, 0, this.header_text);
     this.toggleParagraphElement(tableDataView, 1, this.middle_content_center_text);
     this.toggleParagraphElement(tableDataView, 2, this.footer_content_right_text_top);
@@ -588,100 +620,170 @@ export class Visual implements IVisual {
       5
     );
 
-    const tooltipTitle = this.getData(tableDataView, 0);
-    const tooltipDescription = this.getData(tableDataView, 6);
-    const tooltipValuesChanged = tooltipTitle !== this.currentTitle || tooltipDescription !== this.currentDescription;
+    const tooltipTitleInfo = this.getData(tableDataView, 0);
+    const tooltipDescriptionInfo = this.getData(tableDataView, 6);
+
+    const tooltipTitleTrend = "Key Performance Indicator Trend";
+    const tooltipDescriptionTrend = this.getData(tableDataView, 7);
+
     /*##################################################################
-      TOOLTIP SETTINGS
-     ##################################################################*/
-    this.setTooltip(this.information_tooltip_icon, this.tooltipServiceWrapper, tooltipTitle, tooltipDescription);
+      INFO TOOLTIP SETTINGS
+    ##################################################################*/
+    const tooltipInfoChanged =
+      tooltipTitleInfo !== this.currentTooltipInfoTitle ||
+      tooltipDescriptionInfo !== this.currentTooltipInfoDescription;
+
+    //INFO TOOLTIP
+    this.setTooltip(
+      this.information_tooltip_icon,
+      this.tooltipServiceWrapper,
+      tooltipTitleInfo,
+      tooltipDescriptionInfo
+    );
 
     //If title or description have changed remove the onfocus event and recreate it.
     //otherwise the title and description will be wrong
     //only remove the event if one exists
-    if (tooltipValuesChanged) {
+    if (tooltipInfoChanged) {
+      this.currentTooltipInfoTitle = tooltipTitleInfo;
+      this.currentTooltipInfoDescription = tooltipDescriptionInfo;
       this.information_tooltip_icon.onfocus = null;
-      //this.information_tooltip_icon.onkeydown = null;
+      this.information_tooltip_icon.onkeydown = null;
       this.information_tooltip_icon.onclick = null;
     }
 
     //check if the onfocus event is already set if not create it.
     if (!this.information_tooltip_icon.onfocus) {
-      this.currentTitle = tooltipTitle;
-      this.currentDescription = tooltipDescription;
-
       this.information_tooltip_icon.onfocus = (event) => {
-        console.log("FOCUS");
-        this.showTooltip(<HTMLDivElement>event.target, tooltipTitle, tooltipDescription);
-        this.setTooltipToggle(true);
+        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
     }
 
-    /*if (!this.information_tooltip_icon.onkeydown) {
-      this.currentTitle = tooltipTitle;
-      this.currentDescription = tooltipDescription;
-
+    if (!this.information_tooltip_icon.onkeydown) {
       this.information_tooltip_icon.onkeydown = (event) => {
-        console.log(event.code);
-        console.log(<HTMLDivElement>event.target);
-        console.log("KEYDOWN");
-        if (event.code === "Enter" || event.code === " ") {
-          if (this.isInfoTooltipOpen) {
-            this.hideTooltip();
-            this.setTooltipToggle(false);
-          } else {
-            this.showTooltip(
-              <HTMLDivElement>(<SVGElement>event.target).parentElement,
-              tooltipTitle,
-              tooltipDescription
-            );
-            this.setTooltipToggle(true);
-          }
-        }
+        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
-    }*/
+    }
 
     if (!this.information_tooltip_icon.onclick) {
-      this.currentTitle = tooltipTitle;
-      this.currentDescription = tooltipDescription;
-
       this.information_tooltip_icon.onclick = (event) => {
-        console.log(event);
-        console.log("ON CLICK");
-        console.log(<HTMLDivElement>(<SVGElement>event.target).parentElement);
-        if (this.isInfoTooltipOpen) {
+        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+      };
+      //check if the onblur event is already set if not create it.
+      if (!this.information_tooltip_icon.onblur) {
+        this.information_tooltip_icon.onblur = () => {
           this.hideTooltip();
-          this.setTooltipToggle(false);
-        } else {
-          this.showTooltip(<HTMLDivElement>(<SVGElement>event.target).parentElement, tooltipTitle, tooltipDescription);
-          this.setTooltipToggle(true);
-        }
-      };
+          this.setIconTooltipToggle(false);
+        };
+      }
     }
-
-    //check if the onblur event is already set if not create it.
-    if (!this.information_tooltip_icon.onblur) {
-      this.information_tooltip_icon.onblur = () => {
-        this.hideTooltip();
-        this.setTooltipToggle(false);
-      };
-    }
-
     /*##################################################################
-      TREND SETTINGS
-     ##################################################################*/
+      TREND TOOLTIP SETTINGS
+    ##################################################################*/
+    const tooltipTrendChanged = tooltipDescriptionTrend !== this.currentTooltipTrendDescription;
+    //TREND TOOLTIP
+    this.setTooltip(
+      this.information_trend_container,
+      this.tooltipServiceWrapper,
+      tooltipTitleTrend,
+      tooltipDescriptionTrend
+    );
+
+    if (tooltipTrendChanged) {
+      this.currentTooltipTrendTitle = tooltipTitleTrend;
+      this.currentTooltipTrendDescription = tooltipDescriptionTrend;
+      this.information_trend_container_button.onfocus = null;
+      this.information_trend_container_button.onkeydown = null;
+      this.information_trend_container_button.onclick = null;
+    }
+
+    //check if the onfocus event is already set if not create it.
+    if (!this.information_trend_container_button.onfocus) {
+      this.information_trend_container_button.onfocus = (event) => {
+        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+      };
+    }
+
+    if (!this.information_trend_container_button.onkeydown) {
+      this.information_trend_container_button.onkeydown = (event) => {
+        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+      };
+    }
+
+    if (!this.information_trend_container_button.onclick) {
+      this.information_trend_container_button.onclick = (event) => {
+        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+      };
+      //check if the onblur event is already set if not create it.
+      if (!this.information_trend_container_button.onblur) {
+        this.information_trend_container_button.onblur = () => {
+          this.hideTooltip();
+          this.setTrendTooltipToggle(false);
+        };
+      }
+    }
   }
-  private setTooltipToggle(value: boolean) {
+
+  private onInfoTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
+    if (
+      event.type === "click" ||
+      event.type === "focus" ||
+      (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
+    ) {
+      event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+
+      const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+
+      if (this.isInfoTooltipOpen) {
+        this.hideTooltip();
+        this.setIconTooltipToggle(false);
+      } else {
+        this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo);
+        this.setIconTooltipToggle(true);
+      }
+    }
+  }
+
+  private onTrendTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
+    if (
+      event.type === "click" ||
+      event.type === "focus" ||
+      (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
+    ) {
+      event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+      const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+
+      if (this.isTrendTooltipOpen) {
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+      } else {
+        this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo, false);
+        this.setTrendTooltipToggle(true);
+      }
+    }
+  }
+
+  private setIconTooltipToggle(value: boolean) {
     this.isInfoTooltipOpen = value;
     this.information_tooltip_icon.ariaExpanded = String(value);
   }
-  private showTooltip(target: HTMLDivElement, title: string, description: string) {
+
+  private setTrendTooltipToggle(value: boolean) {
+    this.isTrendTooltipOpen = value;
+    this.information_trend_container_button.ariaExpanded = String(value);
+  }
+
+  private hideTooltip() {
+    this.tooltipService.hide({ immediately: true, isTouchEvent: false });
+  }
+  private showTooltip(target: HTMLElement, title: string, description: string, leftJustified: boolean = true) {
     const width = target.clientWidth;
-    const top = target.offsetTop;
-    const left = target.offsetLeft + width;
+    const y = target.offsetTop;
+
+    const x = leftJustified ? target.offsetLeft + width : target.offsetLeft + width / 2;
 
     this.tooltipService.show({
-      coordinates: [left, top],
+      coordinates: [x, y],
       isTouchEvent: false,
       dataItems: [
         {
@@ -692,10 +794,6 @@ export class Visual implements IVisual {
       ],
       identities: [],
     });
-  }
-
-  private hideTooltip() {
-    this.tooltipService.hide({ immediately: true, isTouchEvent: false });
   }
 
   private getData(tableDataView: powerbi.DataViewTable, position: number) {
@@ -730,9 +828,9 @@ export class Visual implements IVisual {
     directionPosition: number
   ) {
     const textValue = this.getData(tableDataView, trendPosition);
-    textElement.textContent = textValue;
 
     if (textValue === "") {
+      textElement.textContent = "";
       return;
     }
 
@@ -743,13 +841,17 @@ export class Visual implements IVisual {
       return;
     }
 
+    textElement.textContent = (floatValue > 0 ? "+ " : floatValue < 0 ? "- " : "") + textValue;
+
     containingElement.hidden = false;
 
     const directionValue = this.getData(tableDataView, directionPosition);
 
     this.swapSVGIcon(
       trendIconSelected.replace("#", directionValue),
-      floatValue > 0 ? trendUpColour : trendDownColour,
+      (directionValue === "up" && floatValue > 0) || (directionValue === "down" && floatValue < 0)
+        ? trendUpColour
+        : trendDownColour,
       iconElement
     );
   }
@@ -802,6 +904,7 @@ export class Visual implements IVisual {
       div.removeChild(div.lastChild);
     }
 
+    icon.style = "pointer-events: none;";
     div.appendChild(icon);
   }
 
@@ -1326,6 +1429,104 @@ export class Visual implements IVisual {
           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
           currentColor +
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>'
+        );
+
+      case "bike":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bike-icon lucide-bike"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>'
+        );
+      case "bus":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bus-icon lucide-bus"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>'
+        );
+      case "circle-parking":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-parking-icon lucide-circle-parking"><circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>'
+        );
+      case "house-plus":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house-plus-icon lucide-house-plus"><path d="M12.662 21H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v2.475"/><path d="M14.959 12.717A1 1 0 0 0 14 12h-4a1 1 0 0 0-1 1v8"/><path d="M15 18h6"/><path d="M18 15v6"/></svg>'
+        );
+      case "clipboard-list":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list-icon lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>'
+        );
+      case "clipboard-pen-line":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-pen-line-icon lucide-clipboard-pen-line"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.5"/><path d="M16 4h2a2 2 0 0 1 1.73 1"/><path d="M8 18h1"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg>'
+        );
+      case "drama":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-drama-icon lucide-drama"><path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 9.9c-.8.8-2 .8-2.8 0"/><path d="M10.1 7.1C9 7.2 7.7 7.7 6 8.6c-3.5 2-4.7 3.9-3.7 5.6 4.5 7.8 9.5 8.4 11.2 7.4.9-.5 1.9-2.1 1.9-4.7"/><path d="M9.1 16.5c.3-1.1 1.4-1.7 2.4-1.4"/></svg>'
+        );
+      case "handshake":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake-icon lucide-handshake"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>'
+        );
+      case "landmark":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-landmark-icon lucide-landmark"><path d="M10 18v-7"/><path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></svg>'
+        );
+      case "luggage":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-luggage-icon lucide-luggage"><path d="M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/><path d="M10 20h4"/><circle cx="16" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>'
+        );
+      case "mic-vocal":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-vocal-icon lucide-mic-vocal"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12"/><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5"/><circle cx="16" cy="7" r="5"/></svg>'
+        );
+      case "party-popper":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-party-popper-icon lucide-party-popper"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>'
+        );
+      case "tent":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tent-icon lucide-tent"><path d="M3.5 21 14 3"/><path d="M20.5 21 10 3"/><path d="M15.5 21 12 15l-3.5 6"/><path d="M2 21h20"/></svg>'
+        );
+      case "theater":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-theater-icon lucide-theater"><path d="M2 10s3-3 3-8"/><path d="M22 10s-3-3-3-8"/><path d="M10 2c0 4.4-3.6 8-8 8"/><path d="M14 2c0 4.4 3.6 8 8 8"/><path d="M2 10s2 2 2 5"/><path d="M22 10s-2 2-2 5"/><path d="M8 15h8"/><path d="M2 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M14 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/></svg>'
+        );
+
+      case "waves-ladder":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-waves-ladder-icon lucide-waves-ladder"><path d="M19 5a2 2 0 0 0-2 2v11"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M7 13h10"/><path d="M7 9h10"/><path d="M9 5a2 2 0 0 0-2 2v11"/></svg>'
+        );
+      case "construction":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-construction-icon lucide-construction"><rect x="2" y="6" width="20" height="8" rx="1"/><path d="M17 14v7"/><path d="M7 14v7"/><path d="M17 3v3"/><path d="M7 3v3"/><path d="M10 14 2.3 6.3"/><path d="m14 6 7.7 7.7"/><path d="m8 6 8 8"/></svg>'
         );
 
       case "loading-circle":

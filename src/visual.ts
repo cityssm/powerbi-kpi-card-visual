@@ -110,7 +110,7 @@ export class Visual implements IVisual {
 
     this.target = options.element;
     this.tooltipService = options.host.tooltipService;
-    this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
+    this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element, 0);
 
     let colorPalette: ISandboxExtendedColorPalette = options.host.colorPalette;
 

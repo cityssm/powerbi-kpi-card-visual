@@ -29,6 +29,7 @@ import "./../style/visual.less";
 import powerbi from "powerbi-visuals-api";
 import { createTooltipServiceWrapper, ITooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
 import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
 import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
 
@@ -105,6 +106,8 @@ export class Visual implements IVisual {
   private isInfoTooltipOpen: boolean = false;
   private isTrendTooltipOpen: boolean = false;
 
+  private events: IVisualEventService;
+
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
 
@@ -124,6 +127,8 @@ export class Visual implements IVisual {
     }
 
     options.host.hostCapabilities.allowInteractions = true;
+
+    this.events = options.host.eventService;
 
     if (document) {
       /*###########################################################
@@ -176,20 +181,6 @@ export class Visual implements IVisual {
       this.information_tooltip_container_button.appendChild(this.information_tooltip_container_button_icon);
 
       this.information_tooltip_container.appendChild(this.information_tooltip_container_button);
-
-      /*this.middle_content_center_info = document.createElement("div");
-      this.middle_content_center_info.className = "middle-content-info";
-      this.middle_content_center_info.appendChild(this.information_tooltip_container);
-      this.middle_content_center_info.appendChild(this.information_trend_container);*/
-
-      /*
-      this.information_tooltip_button = document.createElement("div");
-      this.information_tooltip_button.appendChild(this.information_tooltip_button_icon);
-
-      this.information_tooltip_container = document.createElement("div");
-      this.information_tooltip_container.className = "middle-info-container";
-
-      this.information_tooltip_container.appendChild(this.information_tooltip_button);*/
 
       /*##################################################################
         CREATE TREND ELEMENT ON MAIN
@@ -456,6 +447,8 @@ export class Visual implements IVisual {
   }
 
   public update(options: VisualUpdateOptions) {
+    this.events.renderingStarted(options);
+
     this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(
       VisualFormattingSettingsModel,
       options.dataViews[0]
@@ -767,6 +760,7 @@ export class Visual implements IVisual {
         };
       }
     }
+    this.events.renderingFinished(options);
   }
 
   private onInfoTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {

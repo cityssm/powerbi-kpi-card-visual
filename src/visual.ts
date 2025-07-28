@@ -882,11 +882,11 @@ export class Visual implements IVisual {
       return;
     }
 
-    textElement.textContent = (floatValue > 0 ? "+ " : floatValue < 0 ? "- " : "") + textValue;
-
     containingElement.hidden = false;
 
     const directionValue = this.getData(tableDataView, directionPosition);
+
+    textElement.textContent = (directionValue === "up" ? "+ " : directionValue === "down" ? "- " : "") + textValue;
 
     this.swapSVGIcon(
       trendIconSelected.replace("#", directionValue),

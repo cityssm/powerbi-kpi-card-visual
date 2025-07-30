@@ -651,7 +651,7 @@ export class Visual implements IVisual {
     const tooltipTitleInfo = this.getData(tableDataView, 0);
     const tooltipDescriptionInfo = this.getData(tableDataView, 6);
 
-    const tooltipTitleTrend = "Key Performance Indicator Trend";
+    const tooltipTitleTrend = tooltipTitleInfo + " Trend";
     const tooltipDescriptionTrend = this.getData(tableDataView, 7);
 
     /*##################################################################

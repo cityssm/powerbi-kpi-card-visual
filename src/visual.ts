@@ -28,23 +28,15 @@
 import "./../style/visual.less";
 import powerbi from "powerbi-visuals-api";
 import { createTooltipServiceWrapper, ITooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
-import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
-import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
+import { select as d3Select } from "d3-selection";
 
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
-
-import DataView = powerbi.DataView;
-import IVisualHost = powerbi.extensibility.IVisualHost;
-
-import * as d3 from "d3";
-
-type Selection<T extends d3.BaseType> = d3.Selection<T, any, any, any>;
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
@@ -149,7 +141,6 @@ export class Visual implements IVisual {
       ###########################################################*/
       this.middle_content_center_text = document.createElement("p");
       this.middle_content_center_text.innerText = "";
-      //this.middle_content_center_text.style.margin = "auto";
 
       this.middle_content_center_icon = document.createElement("div");
       this.middle_content_center_icon.className = "middle-icon-large";
@@ -237,7 +228,6 @@ export class Visual implements IVisual {
       this.middle_content_center.className = "middle-content ";
       this.middle_content_center.appendChild(this.middle_content_center_icon);
       this.middle_content_center.appendChild(this.middle_content_center_text);
-      //this.middle_content_center.appendChild(this.middle_content_center_info);
 
       this.middle_content = document.createElement("div");
       this.middle_content.className = "flex-container-middle";
@@ -253,7 +243,6 @@ export class Visual implements IVisual {
       this.header_middle_content.appendChild(this.middle_content);
 
       this.middle_content_info = document.createElement("div");
-      //this.middle_content_info.className = "flex-container-middle";
       this.middle_content_info.appendChild(this.middle_content_center_info);
 
       this.header_middle_content.appendChild(this.middle_content_info);
@@ -306,10 +295,6 @@ export class Visual implements IVisual {
 
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
-
-      //this.main_content.appendChild(this.information_tooltip_container);
-      //this.main_content.appendChild(this.information_trend_container);
-      //this.target.hidden = true;
 
       /*###########################################################
         SET DEFAULT COLOURS/LOADING
@@ -397,12 +382,12 @@ export class Visual implements IVisual {
       ACCESSIBILITY
       ############################################*/
 
-      this.header_content.tabIndex = 2;
-      this.middle_content_center_text.tabIndex = 3;
-      this.information_tooltip_container_button.tabIndex = 4;
-      this.information_trend_container_button.tabIndex = 5;
-      this.footer_content_right_text_top.tabIndex = 6;
-      this.footer_content_right_text_bottom.tabIndex = 7;
+      this.header_content.tabIndex = 1;
+      this.middle_content_center_text.tabIndex = 2;
+      this.information_tooltip_container_button.tabIndex = 3;
+      this.information_trend_container_button.tabIndex = 4;
+      this.footer_content_right_text_top.tabIndex = 5;
+      this.footer_content_right_text_bottom.tabIndex = 6;
 
       this.middle_content_center_icon.ariaHidden = "true";
       this.footer_content_left_icon.ariaHidden = "true";
@@ -410,9 +395,7 @@ export class Visual implements IVisual {
       this.information_trend_container_icon.ariaHidden = "true";
       this.information_tooltip_container_button_icon.ariaHidden = "true";
 
-      //this.header_content.ariaLabel = "Key Performance Indicator Title";
       this.header_content.role = "heading";
-      //this.header_content.ara = "Key Performance Indicator Title";
 
       this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
       this.middle_content_center.role = "paragraph";
@@ -445,7 +428,6 @@ export class Visual implements IVisual {
       options.dataViews[0]
     );
 
-    //this.target.hidden = false;
     const textCard = this.formattingSettings.textCard;
     const styleCard = this.formattingSettings.styleCard;
 
@@ -461,7 +443,7 @@ export class Visual implements IVisual {
     height = height - padding;
 
     /*##################################################################
-      SET COLOURS
+      SET COLOURS / HIGH CONTRAST
      ##################################################################*/
     const primaryColour: string = this.isHighContrast
       ? this.themeForegroundColour
@@ -896,48 +878,20 @@ export class Visual implements IVisual {
 
     const directionValue = this.getData(tableDataView, directionPosition);
 
-    textElement.textContent = (directionValue === "up" ? "+ " : directionValue === "down" ? "- " : "") + textValue;
+    textElement.textContent =
+      (directionValue === "up-positive" || directionValue === "up-negative"
+        ? "+ "
+        : directionValue === "down-positive" || directionValue === "down-negative"
+        ? "- "
+        : "") + textValue;
 
     this.swapSVGIcon(
-      trendIconSelected.replace("#", directionValue),
-      (directionValue === "up" && floatValue > 0) || (directionValue === "down" && floatValue < 0)
-        ? trendUpColour
-        : trendDownColour,
+      trendIconSelected.replace("#", directionValue.split("-")[0]),
+      directionValue === "up-positive" || directionValue === "down-positive" ? trendUpColour : trendDownColour,
       iconElement
     );
   }
 
-  private setTooltip(
-    tooltipElement: HTMLElement,
-    tooltipService: ITooltipServiceWrapper,
-    title: string,
-    description: string
-  ) {
-    if (tooltipElement) {
-      tooltipService.addTooltip(d3Select(tooltipElement), () => {
-        return [
-          {
-            displayName: "",
-            value: description,
-            header: title,
-          },
-        ];
-      });
-    }
-  }
-
-  private getTooltipData(value: string): VisualTooltipDataItem[] {
-    //const formattedValue = valueFormatter.format(value.value, value.format);
-    //const language = this.localizationManager.getDisplayName("LanguageKey");
-    return [
-      {
-        displayName: value,
-        value: value,
-        color: "red",
-        header: value && "displayed language " + value,
-      },
-    ];
-  }
   /**
    * Returns properties pane formatting model content hierarchies, properties and latest formatting values, Then populate properties pane.
    * This method is called once every time we open properties pane or when the user edit any format property.

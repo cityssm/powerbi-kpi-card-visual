@@ -105,6 +105,7 @@ export class Visual implements IVisual {
 
   private isInfoTooltipOpen: boolean = false;
   private isTrendTooltipOpen: boolean = false;
+  private isMouseInContainer: boolean = false;
 
   private events: IVisualEventService;
 
@@ -660,9 +661,17 @@ export class Visual implements IVisual {
 
     if (!this.main_content.onmouseleave) {
       this.main_content.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
+
         this.hideTooltip();
         this.setTrendTooltipToggle(false);
         this.setIconTooltipToggle(false);
+      };
+    }
+
+    if (!this.main_content.onmouseenter) {
+      this.main_content.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
       };
     }
 
@@ -688,6 +697,7 @@ export class Visual implements IVisual {
 
     if (!this.information_tooltip_container_button.onmouseleave) {
       this.information_tooltip_container_button.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
         this.hideTooltip();
         this.setTrendTooltipToggle(false);
         this.setIconTooltipToggle(false);
@@ -696,6 +706,7 @@ export class Visual implements IVisual {
 
     if (!this.information_tooltip_container_button.onmouseenter) {
       this.information_tooltip_container_button.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
         infoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
     }
@@ -721,6 +732,7 @@ export class Visual implements IVisual {
 
     if (!this.information_trend_container_button.onmouseleave) {
       this.information_trend_container_button.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
         this.hideTooltip();
         this.setTrendTooltipToggle(false);
         this.setIconTooltipToggle(false);
@@ -729,6 +741,7 @@ export class Visual implements IVisual {
 
     if (!this.information_trend_container_button.onmouseenter) {
       this.information_trend_container_button.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
         trendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
       };
     }
@@ -751,6 +764,8 @@ export class Visual implements IVisual {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
       event.stopPropagation();
 
+      if (!this.isMouseInContainer) return;
+
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
 
       if (this.isInfoTooltipOpen) {
@@ -772,6 +787,8 @@ export class Visual implements IVisual {
     ) {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
       event.stopPropagation();
+
+      if (!this.isMouseInContainer) return;
 
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
 

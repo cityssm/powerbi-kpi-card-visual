@@ -867,9 +867,7 @@ export class Visual implements IVisual {
       return;
     }
 
-    const floatValue = parseFloat(textValue);
-
-    if (trendIconSelected === "hide" || !floatValue || floatValue === 0) {
+    if (trendIconSelected === "hide" || textValue === "0%") {
       containingElement.hidden = true;
       return;
     }

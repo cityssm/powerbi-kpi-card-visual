@@ -420,24 +420,14 @@ export class Visual implements IVisual {
       this.information_tooltip_container_button.role = "button";
       this.information_tooltip_container_button.ariaHasPopup = "true";
       this.information_tooltip_container_button.ariaExpanded = String(this.isInfoTooltipOpen);
-      this.information_tooltip_container_button.onclick = () => {
-        //console.log("ORIGINAL CLICK");
-      };
-      this.information_tooltip_container_button.onkeydown = () => {
-        //console.log("ORIGINAL KEYDOWN");
-      };
+      this.information_tooltip_container_button.onclick = () => {};
 
       this.information_trend_container_button.ariaLabel = "Difference between last period";
       this.information_trend_container_button.role = "button";
       this.information_trend_container_button.ariaHasPopup = "true";
       this.information_trend_container_button.ariaExpanded = String(this.isTrendTooltipOpen);
 
-      this.information_trend_container_button.onclick = () => {
-        //console.log("ORIGINAL CLICK");
-      };
-      this.information_trend_container_button.onkeydown = () => {
-        //console.log("ORIGINAL KEYDOWN");
-      };
+      this.information_trend_container_button.onclick = () => {};
 
       this.footer_content_right_text_top.role = "paragraph";
       this.footer_content_right_text_bottom.role = "paragraph";
@@ -665,114 +655,103 @@ export class Visual implements IVisual {
     const tooltipDescriptionTrend = this.getData(tableDataView, 7);
 
     /*##################################################################
+      MAIN CCONTENT TOOLTIP SETTINGS
+    ##################################################################*/
+
+    if (!this.main_content.onmouseleave) {
+      this.main_content.onmouseleave = (event) => {
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
+      };
+    }
+
+    /*##################################################################
       INFO TOOLTIP SETTINGS
     ##################################################################*/
     const tooltipInfoChanged =
       tooltipTitleInfo !== this.currentTooltipInfoTitle ||
       tooltipDescriptionInfo !== this.currentTooltipInfoDescription;
 
-    //INFO TOOLTIP
-    this.setTooltip(
-      this.information_tooltip_container_button,
-      this.tooltipServiceWrapper,
-      tooltipTitleInfo,
-      tooltipDescriptionInfo
-    );
-
-    //If title or description have changed remove the onfocus event and recreate it.
+    //If title or description have changed remove the events and recreate them later.
     //otherwise the title and description will be wrong
     //only remove the event if one exists
     if (tooltipInfoChanged) {
       this.currentTooltipInfoTitle = tooltipTitleInfo;
       this.currentTooltipInfoDescription = tooltipDescriptionInfo;
-      this.information_tooltip_container_button.onfocus = null;
-      this.information_tooltip_container_button.onkeydown = null;
+
       this.information_tooltip_container_button.onclick = null;
+      this.information_tooltip_container_button.onmouseenter = null;
     }
 
-    //check if the onfocus event is already set if not create it.
-    if (!this.information_tooltip_container_button.onfocus) {
-      this.information_tooltip_container_button.onfocus = (event) => {
-        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+    const infoTooltipEvent = this.debounce(this.onInfoTooltipEvent.bind(this), 500);
+
+    if (!this.information_tooltip_container_button.onmouseleave) {
+      this.information_tooltip_container_button.onmouseleave = (event) => {
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
       };
     }
 
-    if (!this.information_tooltip_container_button.onkeydown) {
-      this.information_tooltip_container_button.onkeydown = (event) => {
-        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+    if (!this.information_tooltip_container_button.onmouseenter) {
+      this.information_tooltip_container_button.onmouseenter = (event) => {
+        infoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
     }
 
     if (!this.information_tooltip_container_button.onclick) {
       this.information_tooltip_container_button.onclick = (event) => {
-        this.onInfoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+        infoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
       };
-      //check if the onblur event is already set if not create it.
-      if (!this.information_tooltip_container_button.onblur) {
-        this.information_tooltip_container_button.onblur = () => {
-          this.hideTooltip();
-          this.setIconTooltipToggle(false);
-        };
-      }
     }
     /*##################################################################
       TREND TOOLTIP SETTINGS
     ##################################################################*/
     const tooltipTrendChanged = tooltipDescriptionTrend !== this.currentTooltipTrendDescription;
-    //TREND TOOLTIP
-    this.setTooltip(
-      this.information_trend_container,
-      this.tooltipServiceWrapper,
-      tooltipTitleTrend,
-      tooltipDescriptionTrend
-    );
 
     if (tooltipTrendChanged) {
       this.currentTooltipTrendTitle = tooltipTitleTrend;
       this.currentTooltipTrendDescription = tooltipDescriptionTrend;
-      this.information_trend_container_button.onfocus = null;
-      this.information_trend_container_button.onkeydown = null;
       this.information_trend_container_button.onclick = null;
+      this.information_trend_container_button.onmouseenter = null;
     }
 
-    //check if the onfocus event is already set if not create it.
-    if (!this.information_trend_container_button.onfocus) {
-      this.information_trend_container_button.onfocus = (event) => {
-        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+    const trendTooltipEvent = this.debounce(this.onTrendTooltipEvent.bind(this), 500);
+
+    if (!this.information_trend_container_button.onmouseleave) {
+      this.information_trend_container_button.onmouseleave = (event) => {
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
       };
     }
 
-    if (!this.information_trend_container_button.onkeydown) {
-      this.information_trend_container_button.onkeydown = (event) => {
-        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+    if (!this.information_trend_container_button.onmouseenter) {
+      this.information_trend_container_button.onmouseenter = (event) => {
+        trendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
       };
     }
 
     if (!this.information_trend_container_button.onclick) {
       this.information_trend_container_button.onclick = (event) => {
-        this.onTrendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+        trendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
       };
-      //check if the onblur event is already set if not create it.
-      if (!this.information_trend_container_button.onblur) {
-        this.information_trend_container_button.onblur = () => {
-          this.hideTooltip();
-          this.setTrendTooltipToggle(false);
-        };
-      }
     }
+
     this.events.renderingFinished(options);
   }
 
   private onInfoTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
     if (
       event.type === "click" ||
-      event.type === "focus" ||
+      event.type === "mouseenter" ||
       (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
     ) {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+      event.stopPropagation();
 
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
-      //console.log(target);
 
       if (this.isInfoTooltipOpen) {
         this.hideTooltip();
@@ -780,6 +759,7 @@ export class Visual implements IVisual {
       } else {
         this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo);
         this.setIconTooltipToggle(true);
+        this.setTrendTooltipToggle(false);
       }
     }
   }
@@ -787,12 +767,13 @@ export class Visual implements IVisual {
   private onTrendTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
     if (
       event.type === "click" ||
-      event.type === "focus" ||
+      event.type === "mouseenter" ||
       (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
     ) {
       event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+      event.stopPropagation();
+
       const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
-      //console.log(target);
 
       if (this.isTrendTooltipOpen) {
         this.hideTooltip();
@@ -800,8 +781,20 @@ export class Visual implements IVisual {
       } else {
         this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo, false);
         this.setTrendTooltipToggle(true);
+        this.setIconTooltipToggle(false);
       }
     }
+  }
+
+  private debounce(func, delay) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout); // Clear any existing timeout
+      timeout = setTimeout(() => {
+        func.apply(context, args); // Execute the function after the delay
+      }, delay);
+    };
   }
 
   private setIconTooltipToggle(value: boolean) {

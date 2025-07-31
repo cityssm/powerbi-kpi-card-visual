@@ -245,7 +245,9 @@ class StyleCardSettings extends FormattingSettingsCard {
     this.centerIconSize,
     this.bottomLeftIcon,
     this.bottomLeftIconSize,
+
     this.trendIcon,
+
     this.borderRadius,
   ];
 }

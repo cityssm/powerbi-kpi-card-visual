@@ -883,6 +883,12 @@ export class Visual implements IVisual {
         ? "- "
         : "") + textValue;
 
+    if (trendIconSelected === "none") {
+      iconElement.hidden = true;
+      return;
+    }
+    iconElement.hidden = false;
+
     this.swapSVGIcon(
       trendIconSelected.replace("#", directionValue.split("-")[0]),
       directionValue === "up-positive" || directionValue === "down-positive" ? trendUpColour : trendDownColour,

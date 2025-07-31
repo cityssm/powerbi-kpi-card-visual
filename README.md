@@ -95,7 +95,7 @@ This package includes a set of 105 SVG [Lucide Icons](https://lucide.dev/icons/)
 
 ## Text, Style, and Data Configuration Examples:
 
-![image](https://github.com/user-attachments/assets/c5d7b885-d899-4aba-bfcb-a8169a5c5d3b)
+<img width="1231" height="809" alt="image" src="https://github.com/user-attachments/assets/d56b3f62-1880-4d30-9da8-5ae508e2b972" />
 
 ## Run
 

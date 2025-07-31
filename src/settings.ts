@@ -40,14 +40,14 @@ const iconList: powerbi.IEnumMember[] = [
   { value: "alarm-clock", displayName: "Alarm Clock" },
   { value: "armchair", displayName: "Armchair" },
   { value: "badge-dollar-sign", displayName: "Dollar Sign Badge" },
-  { value: "circle-dollar-sign", displayName: "Dollar Sign Circle" },
-  { value: "dollar-sign", displayName: "Dollar Sign" },
   { value: "bed-double", displayName: "Bed Double" },
   { value: "bell-electric", displayName: "Bell Electric" },
+  { value: "bike", displayName: "Bike" },
   { value: "book-open", displayName: "Book Open" },
   { value: "brain", displayName: "Brain" },
   { value: "building", displayName: "Building Type A" },
   { value: "building-2", displayName: "Building Type B" },
+  { value: "bus", displayName: "Bus" },
   { value: "cabinet-filing", displayName: "Filing Cabinet" },
   { value: "calendar", displayName: "Calendar Type A" },
   { value: "calendar-check-2", displayName: "Calendar Type B" },
@@ -57,13 +57,20 @@ const iconList: powerbi.IEnumMember[] = [
   { value: "check", displayName: "Check" },
   { value: "check-check", displayName: "Check Check" },
   { value: "circle-alert", displayName: "Alert Circle" },
+  { value: "circle-dollar-sign", displayName: "Dollar Sign Circle" },
+  { value: "circle-parking", displayName: "Circle Parking" },
   { value: "circle-user-round", displayName: "User Circle" },
   { value: "citrus", displayName: "Citrus" },
+  { value: "clipboard-list", displayName: "Clipboard List" },
+  { value: "clipboard-pen-line", displayName: "Clipboard Pen" },
   { value: "clock", displayName: "Clock" },
   { value: "coffee", displayName: "Coffee" },
   { value: "compass", displayName: "Compass" },
+  { value: "construction", displayName: "Construction" },
   { value: "database", displayName: "Database" },
+  { value: "dollar-sign", displayName: "Dollar Sign" },
   { value: "door-open", displayName: "Door Open" },
+  { value: "drama", displayName: "Drama" },
   { value: "dumbbell", displayName: "Dumbbell" },
   { value: "eye", displayName: "Eye" },
   { value: "farm", displayName: "Farm" },
@@ -75,18 +82,24 @@ const iconList: powerbi.IEnumMember[] = [
   { value: "gamepad-2", displayName: "Game Pad" },
   { value: "goal", displayName: "Goal" },
   { value: "hammer", displayName: "Hammer" },
+  { value: "handshake", displayName: "Handshake" },
   { value: "house", displayName: "House" },
   { value: "house-plug", displayName: "House Plug" },
-  { value: "houses", displayName: "Houses" },
+  { value: "house-plus", displayName: "House Plus" },
   { value: "house-wifi", displayName: "House WiFi" },
+  { value: "houses", displayName: "Houses" },
   { value: "land-plot", displayName: "Land Plot" },
+  { value: "landmark", displayName: "Landmark" },
   { value: "leaf", displayName: "Leaf" },
   { value: "lock-keyhole", displayName: "Lock Keyhole" },
+  { value: "luggage", displayName: "Luggage" },
   { value: "mail", displayName: "Mail" },
   { value: "mails", displayName: "Mail Multiple" },
   { value: "map-pin", displayName: "Map Pin" },
   { value: "map-plus", displayName: "Map Plus" },
   { value: "medal", displayName: "Medal" },
+  { value: "mic-vocal", displayName: "Microphone" },
+  { value: "party-popper", displayName: "Party Popper" },
   { value: "pencil", displayName: "Pencil" },
   { value: "phone", displayName: "Phone" },
   { value: "popcorn", displayName: "Popcorn" },
@@ -100,7 +113,9 @@ const iconList: powerbi.IEnumMember[] = [
   { value: "store", displayName: "Store" },
   { value: "target-arrow", displayName: "Target Arrow" },
   { value: "telescope", displayName: "Telescope" },
+  { value: "tent", displayName: "Tent" },
   { value: "tent-tree", displayName: "Tree Tent" },
+  { value: "theater", displayName: "Theater" },
   { value: "train-front-tunnel", displayName: "Train Tunnel" },
   { value: "trash-2", displayName: "Trash" },
   { value: "trees-forest", displayName: "Trees" },
@@ -108,6 +123,7 @@ const iconList: powerbi.IEnumMember[] = [
   { value: "triangle-alert", displayName: "Alert Triangle" },
   { value: "utensils", displayName: "Utensils" },
   { value: "waves", displayName: "Waves" },
+  { value: "waves-ladder", displayName: "Waves Ladder" },
   { value: "yin-yang", displayName: "Ying Yang" },
 ];
 
@@ -121,6 +137,20 @@ const iconTrendList: powerbi.IEnumMember[] = [
   { value: "hide", displayName: "Hide Trend Formatting" },
 ];
 
+const centerIconSize: powerbi.IEnumMember[] = [
+  { value: "middle-icon-large", displayName: "Large" },
+  { value: "middle-icon-medium", displayName: "Medium" },
+  { value: "middle-icon-small", displayName: "Small" },
+  { value: "middle-icon-extra-small", displayName: "Extra Small" },
+];
+
+const bottomLeftIconSize: powerbi.IEnumMember[] = [
+  { value: "footer-icon-extra-large", displayName: "Extra Large" },
+  { value: "footer-icon-large", displayName: "Large" },
+  { value: "footer-icon-medium", displayName: "Medium" },
+  { value: "footer-icon-small", displayName: "Small" },
+];
+
 /**
  * Data Point Formatting Card
  */
@@ -131,6 +161,7 @@ class StyleCardSettings extends FormattingSettingsCard {
   primaryColour = new formattingSettings.ColorPicker({
     name: "primaryColour",
     displayName: "Primary Colour",
+
     value: { value: "#007681" },
   });
 
@@ -160,11 +191,25 @@ class StyleCardSettings extends FormattingSettingsCard {
     value: iconList[0],
   });
 
+  centerIconSize = new formattingSettings.ItemDropdown({
+    name: "centerIconSize",
+    displayName: "Center Icon Size",
+    items: centerIconSize,
+    value: centerIconSize[0],
+  });
+
   bottomLeftIcon = new formattingSettings.ItemDropdown({
     name: "bottomLeftIcon",
     displayName: "Bottom Left Icon",
     items: iconList,
     value: iconList[0],
+  });
+
+  bottomLeftIconSize = new formattingSettings.ItemDropdown({
+    name: "bottomLeftIconSize",
+    displayName: "Bottom Left Icon Size",
+    items: bottomLeftIconSize,
+    value: bottomLeftIconSize[1],
   });
 
   trendIcon = new formattingSettings.ItemDropdown({
@@ -197,8 +242,12 @@ class StyleCardSettings extends FormattingSettingsCard {
     this.centerIconColour,
     this.bottomLeftIconColour,
     this.centerIcon,
+    this.centerIconSize,
     this.bottomLeftIcon,
+    this.bottomLeftIconSize,
+
     this.trendIcon,
+
     this.borderRadius,
   ];
 }

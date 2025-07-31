@@ -28,21 +28,15 @@
 import "./../style/visual.less";
 import powerbi from "powerbi-visuals-api";
 import { createTooltipServiceWrapper, ITooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
-import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
-import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
+import { select as d3Select } from "d3-selection";
 
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
-
-import DataView = powerbi.DataView;
-import IVisualHost = powerbi.extensibility.IVisualHost;
-
-import * as d3 from "d3";
-
-type Selection<T extends d3.BaseType> = d3.Selection<T, any, any, any>;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
@@ -54,21 +48,28 @@ export class Visual implements IVisual {
   private formattingSettingsService: FormattingSettingsService;
   private main_content: HTMLDivElement;
 
+  private information_tooltip_container: HTMLDivElement;
+  private information_tooltip_container_button: HTMLButtonElement;
+  private information_tooltip_container_button_icon: HTMLDivElement;
+
+  private information_trend_container: HTMLDivElement;
+  private information_trend_container_button: HTMLButtonElement;
+  private information_trend_container_icon: HTMLDivElement;
+  private information_trend_container_text: HTMLDivElement;
+
   private header_middle_content: HTMLDivElement;
 
   private header_content: HTMLDivElement;
   private header_text: HTMLParagraphElement;
-  private header_text_icon: HTMLDivElement;
 
   private middle_content: HTMLDivElement;
   private middle_content_center: HTMLDivElement;
   private middle_content_center_icon: HTMLDivElement;
-
   private middle_content_center_text: HTMLDivElement;
 
-  private middle_content_center_trend: HTMLDivElement;
-  private middle_content_center_trend_icon: HTMLDivElement;
-  private middle_content_center_trend_text: HTMLDivElement;
+  private middle_content_info: HTMLDivElement;
+  private middle_content_center_info: HTMLDivElement;
+  private middle_content_center_info_grow: HTMLDivElement;
 
   private footer_content: HTMLDivElement;
   private footer_content_left: HTMLDivElement;
@@ -79,12 +80,48 @@ export class Visual implements IVisual {
   private footer_content_right_text_bottom: HTMLParagraphElement;
 
   private tooltipServiceWrapper: ITooltipServiceWrapper;
+  private tooltipService: powerbi.extensibility.ITooltipService;
+
+  private currentTooltipInfoTitle: string;
+  private currentTooltipInfoDescription: string;
+
+  private currentTooltipTrendTitle: string;
+  private currentTooltipTrendDescription: string;
+
+  private isHighContrast: boolean;
+
+  private themeForegroundColour: string;
+  private themeBackgroundColour: string;
+  private themeForegroundSelectedColour: string;
+  private themeLinkColour: string;
+
+  private isInfoTooltipOpen: boolean = false;
+  private isTrendTooltipOpen: boolean = false;
+  private isMouseInContainer: boolean = false;
+
+  private events: IVisualEventService;
 
   constructor(options: VisualConstructorOptions) {
     this.formattingSettingsService = new FormattingSettingsService();
 
     this.target = options.element;
-    this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
+    this.tooltipService = options.host.tooltipService;
+    this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element, 0);
+
+    let colorPalette: ISandboxExtendedColorPalette = options.host.colorPalette;
+
+    this.isHighContrast = colorPalette.isHighContrast;
+
+    if (this.isHighContrast) {
+      this.themeForegroundColour = colorPalette.foreground.value;
+      this.themeBackgroundColour = colorPalette.background.value;
+      this.themeForegroundSelectedColour = colorPalette.foregroundSelected.value;
+      this.themeLinkColour = colorPalette.hyperlink.value;
+    }
+
+    options.host.hostCapabilities.allowInteractions = true;
+
+    this.events = options.host.eventService;
 
     if (document) {
       /*###########################################################
@@ -94,14 +131,9 @@ export class Visual implements IVisual {
       this.header_content.className = "flex-container-header";
       //CREATE TEXT ELEMENT
       this.header_text = document.createElement("p");
+      this.header_text.id = "title";
       this.header_text.innerText = "";
 
-      this.header_text_icon = document.createElement("div");
-      this.header_text_icon.className = "header-icon ";
-      this.swapSVGIcon("info", "#808080", this.header_text_icon);
-
-      //APPEND ELEMENTS TO HEADER
-      this.header_content.appendChild(this.header_text_icon);
       this.header_content.appendChild(this.header_text);
 
       /*###########################################################
@@ -111,26 +143,82 @@ export class Visual implements IVisual {
       this.middle_content_center_text.innerText = "";
 
       this.middle_content_center_icon = document.createElement("div");
-      this.middle_content_center_icon.className = "middle-icon ";
+      this.middle_content_center_icon.className = "middle-icon-large";
 
-      this.swapSVGIcon("loading", "#808080", this.middle_content_center_icon);
+      this.swapSVGIcon(
+        "loading",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.middle_content_center_icon
+      );
 
-      /*######################
-        CREATE MIDDLE TREND LINE
-      ########################*/
-      this.middle_content_center_trend_icon = document.createElement("div");
-      this.middle_content_center_trend_icon.className = "middle-trend-icon";
+      /*##################################################################
+       CREATE MIDDLE INFORMATION ICON
+     ##################################################################*/
 
-      this.swapSVGIcon("none", "#4CBB17", this.middle_content_center_trend_icon);
+      this.information_tooltip_container_button_icon = document.createElement("div");
+      this.information_tooltip_container_button_icon.className = "middle-info-icon";
 
-      //#ED1C24
-      this.middle_content_center_trend_text = document.createElement("p");
-      this.middle_content_center_trend_text.innerText = "-2.57%";
+      this.swapSVGIcon(
+        "info",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_tooltip_container_button_icon
+      );
 
-      this.middle_content_center_trend = document.createElement("div");
-      this.middle_content_center_trend.className = "flex-trend-container";
-      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_text);
-      this.middle_content_center_trend.appendChild(this.middle_content_center_trend_icon);
+      this.information_tooltip_container = document.createElement("div");
+      this.information_tooltip_container.className = "middle-info-container";
+
+      this.information_tooltip_container_button = document.createElement("button");
+      this.information_tooltip_container_button.className = "middle-info-button";
+
+      this.information_tooltip_container_button.appendChild(this.information_tooltip_container_button_icon);
+
+      this.information_tooltip_container.appendChild(this.information_tooltip_container_button);
+
+      /*##################################################################
+        CREATE TREND ELEMENT ON MAIN
+      ##################################################################*/
+      this.information_trend_container_icon = document.createElement("div");
+      this.information_trend_container_icon.className = "middle-trend-icon";
+
+      this.swapSVGIcon(
+        "arrow-down",
+        this.isHighContrast ? this.themeForegroundColour : "#808080",
+        this.information_trend_container_icon
+      );
+
+      this.information_trend_container_text = document.createElement("p");
+      this.information_trend_container_text.innerText = "-2.57%";
+
+      this.information_trend_container = document.createElement("div");
+      this.information_trend_container.className = "middle-trend-container";
+
+      this.information_trend_container_button = document.createElement("button");
+      this.information_trend_container_button.className = "middle-trend-button";
+
+      this.information_trend_container_button.appendChild(this.information_trend_container_text);
+      this.information_trend_container_button.appendChild(this.information_trend_container_icon);
+
+      this.information_trend_container.appendChild(this.information_trend_container_button);
+
+      this.middle_content_center_info_grow = document.createElement("div");
+      this.middle_content_center_info_grow.className = "middle-info-grow";
+      this.middle_content_center_info_grow.appendChild(this.information_tooltip_container);
+
+      this.middle_content_center_info = document.createElement("div");
+      this.middle_content_center_info.className = "middle-content-info";
+      this.middle_content_center_info.appendChild(this.middle_content_center_info_grow);
+      this.middle_content_center_info.appendChild(this.information_trend_container);
+
+      /*##################################################################
+      TREND FONT DEFAULTS
+     ##################################################################*/
+
+      this.information_trend_container_text.style.margin = "auto";
+      this.information_trend_container_text.style.fontFamily = "Arial";
+      this.information_trend_container_text.style.fontSize = "15px";
+      this.information_trend_container_text.style.fontStyle = "italic";
+      this.information_trend_container_text.style.fontWeight = "normal";
+      this.information_trend_container_text.style.textDecoration = "normal";
 
       /*######################
         ATTACH MIDDLE COMPONENTS
@@ -140,7 +228,6 @@ export class Visual implements IVisual {
       this.middle_content_center.className = "middle-content ";
       this.middle_content_center.appendChild(this.middle_content_center_icon);
       this.middle_content_center.appendChild(this.middle_content_center_text);
-      this.middle_content_center.appendChild(this.middle_content_center_trend);
 
       this.middle_content = document.createElement("div");
       this.middle_content.className = "flex-container-middle";
@@ -155,14 +242,23 @@ export class Visual implements IVisual {
       this.header_middle_content.appendChild(this.header_content);
       this.header_middle_content.appendChild(this.middle_content);
 
+      this.middle_content_info = document.createElement("div");
+      this.middle_content_info.appendChild(this.middle_content_center_info);
+
+      this.header_middle_content.appendChild(this.middle_content_info);
+
       /*###########################################################
         CREATE FOOTER ELEMENTS
       ###########################################################*/
 
       //############### CREATE LEFT FOOTER SECTION ###############
       this.footer_content_left_icon = document.createElement("div");
-      this.footer_content_left_icon.className = "footer-icon ";
-      this.swapSVGIcon("loading", "#FFFFFF", this.footer_content_left_icon);
+      this.footer_content_left_icon.className = "footer-icon-large";
+      this.swapSVGIcon(
+        "loading",
+        this.isHighContrast ? this.themeForegroundColour : "#FFFFFF",
+        this.footer_content_left_icon
+      );
 
       this.footer_content_left = document.createElement("div");
       this.footer_content_left.className = "flex-item-left";
@@ -199,20 +295,28 @@ export class Visual implements IVisual {
 
       this.main_content.appendChild(this.header_middle_content);
       this.main_content.appendChild(this.footer_content);
-      //this.target.hidden = true;
 
       /*###########################################################
         SET DEFAULT COLOURS/LOADING
       ###########################################################*/
-      this.main_content.style.borderColor = "#808080";
-      this.main_content.style.backgroundColor = "#808080";
 
-      this.header_middle_content.style.backgroundColor = "#E6E6E6";
+      this.main_content.style.borderColor = this.isHighContrast ? this.themeForegroundColour : "#808080";
+      this.main_content.style.backgroundColor = this.isHighContrast ? this.themeBackgroundColour : "#808080";
 
-      this.middle_content_center_text.style.color = "#000000";
-      this.header_text.style.color = "#000000";
-      this.footer_content_right_text_top.style.color = "#FFFFFF";
-      this.footer_content_right_text_bottom.style.color = "#FFFFFF";
+      this.header_middle_content.style.backgroundColor = this.isHighContrast ? this.themeBackgroundColour : "#E6E6E6";
+
+      this.middle_content_center_text.style.color = this.isHighContrast ? this.themeBackgroundColour : "#000000";
+      this.header_text.style.color = this.isHighContrast ? this.themeBackgroundColour : "#000000";
+      this.footer_content_right_text_top.style.color = this.isHighContrast ? this.themeBackgroundColour : "#FFFFFF";
+      this.footer_content_right_text_bottom.style.color = this.isHighContrast ? this.themeBackgroundColour : "#FFFFFF";
+
+      if (this.isHighContrast) {
+        this.middle_content.style.borderBottom = "3px";
+        this.middle_content.style.borderBottomColor = this.themeForegroundColour;
+        this.middle_content.style.borderBottomStyle = "solid";
+
+        this.information_trend_container_text.style.color = this.themeForegroundColour;
+      }
 
       let width: number = options.element.clientWidth;
       let height: number = options.element.clientHeight;
@@ -233,9 +337,9 @@ export class Visual implements IVisual {
       this.header_text.style.fontStyle = "normal";
       this.header_text.style.fontWeight = "bold";
       this.header_text.style.textDecoration = "normal";
+      this.header_text.style.textAlign = "center";
 
       this.header_content.style.justifyContent = "center";
-      this.header_text.style.textAlign = "center";
 
       /*##################################################################
       VALUE FONT DEFAULTS
@@ -249,17 +353,6 @@ export class Visual implements IVisual {
       this.middle_content_center_text.style.textDecoration = "normal";
 
       this.middle_content_center.style.float = "";
-
-      /*##################################################################
-      TREND FONT DEFAULTS
-     ##################################################################*/
-
-      this.middle_content_center_trend_text.style.margin = "auto";
-      this.middle_content_center_trend_text.style.fontFamily = "Arial";
-      this.middle_content_center_trend_text.style.fontSize = "14px";
-      this.middle_content_center_trend_text.style.fontStyle = "italic";
-      this.middle_content_center_trend_text.style.fontWeight = "normal";
-      this.middle_content_center_trend_text.style.textDecoration = "normal";
 
       /*##################################################################
       FOOTER TOP TEXT DEFAULTS
@@ -285,17 +378,56 @@ export class Visual implements IVisual {
       this.footer_content_right_text_bottom.style.textDecoration = "normal";
       this.footer_content_right_text_bottom.style.textAlign = "left";
 
+      /*############################################
+      ACCESSIBILITY
+      ############################################*/
+
+      this.header_content.tabIndex = 1;
+      this.middle_content_center_text.tabIndex = 2;
+      this.information_tooltip_container_button.tabIndex = 3;
+      this.information_trend_container_button.tabIndex = 4;
+      this.footer_content_right_text_top.tabIndex = 5;
+      this.footer_content_right_text_bottom.tabIndex = 6;
+
+      this.middle_content_center_icon.ariaHidden = "true";
+      this.footer_content_left_icon.ariaHidden = "true";
+
+      this.information_trend_container_icon.ariaHidden = "true";
+      this.information_tooltip_container_button_icon.ariaHidden = "true";
+
+      this.header_content.role = "heading";
+
+      this.middle_content_center.ariaLabel = "Key Performance Indicator Value";
+      this.middle_content_center.role = "paragraph";
+
+      this.information_tooltip_container_button.ariaLabel = "Additional Information";
+      this.information_tooltip_container_button.role = "button";
+      this.information_tooltip_container_button.ariaHasPopup = "true";
+      this.information_tooltip_container_button.ariaExpanded = String(this.isInfoTooltipOpen);
+      this.information_tooltip_container_button.onclick = () => {};
+
+      this.information_trend_container_button.ariaLabel = "Difference between last period";
+      this.information_trend_container_button.role = "button";
+      this.information_trend_container_button.ariaHasPopup = "true";
+      this.information_trend_container_button.ariaExpanded = String(this.isTrendTooltipOpen);
+
+      this.information_trend_container_button.onclick = () => {};
+
+      this.footer_content_right_text_top.role = "paragraph";
+      this.footer_content_right_text_bottom.role = "paragraph";
+
       this.target.appendChild(this.main_content);
     }
   }
 
   public update(options: VisualUpdateOptions) {
+    this.events.renderingStarted(options);
+
     this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(
       VisualFormattingSettingsModel,
       options.dataViews[0]
     );
 
-    //this.target.hidden = false;
     const textCard = this.formattingSettings.textCard;
     const styleCard = this.formattingSettings.styleCard;
 
@@ -311,18 +443,26 @@ export class Visual implements IVisual {
     height = height - padding;
 
     /*##################################################################
-      SET COLOURS
+      SET COLOURS / HIGH CONTRAST
      ##################################################################*/
-    const primaryColour: string = styleCard.primaryColour.value.value as string;
-    const secondaryColour: string = styleCard.secondaryColour.value.value as string;
-    const centerIconColour: string = styleCard.centerIconColour.value.value as string;
-    const bottomIconColour: string = styleCard.bottomLeftIconColour.value.value as string;
+    const primaryColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.primaryColour.value.value as string);
+    const secondaryColour: string = this.isHighContrast
+      ? this.themeBackgroundColour
+      : (styleCard.secondaryColour.value.value as string);
+    const centerIconColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.centerIconColour.value.value as string);
+    const bottomIconColour: string = this.isHighContrast
+      ? this.themeForegroundColour
+      : (styleCard.bottomLeftIconColour.value.value as string);
 
-    const trendUpColour: string = "#4CBB17";
-    const trendDownColour: string = "#ED1C24";
+    const trendUpColour: string = this.isHighContrast ? this.themeForegroundColour : "#4CBB17";
+    const trendDownColour: string = this.isHighContrast ? this.themeForegroundColour : "#ED1C24";
 
     this.main_content.style.borderColor = primaryColour;
-    this.main_content.style.backgroundColor = primaryColour;
+    this.main_content.style.backgroundColor = this.isHighContrast ? secondaryColour : primaryColour;
 
     this.header_middle_content.style.backgroundColor = secondaryColour;
 
@@ -332,6 +472,13 @@ export class Visual implements IVisual {
     this.footer_content_right_text_top.style.color = bottomIconColour;
     this.footer_content_right_text_bottom.style.color = bottomIconColour;
 
+    if (this.isHighContrast) {
+      this.middle_content.style.borderBottom = "3px";
+      this.middle_content.style.borderBottomColor = primaryColour;
+      this.middle_content.style.borderBottomStyle = "solid";
+
+      this.information_trend_container_text.style.color = primaryColour;
+    }
     /*##################################################################
       SET BORDER RADIUS
      ##################################################################*/
@@ -343,8 +490,8 @@ export class Visual implements IVisual {
 
     if (styleCard.borderRadius.value >= 20) {
       const newPadding = styleCard.borderRadius.value - 10;
-      this.header_text_icon.style.paddingLeft = newPadding + "px";
-      this.middle_content_center_trend.style.paddingRight = newPadding + "px";
+      this.information_tooltip_container.style.paddingLeft = newPadding + "px";
+      this.information_trend_container.style.paddingRight = newPadding + "px";
     }
 
     /*##################################################################
@@ -369,7 +516,13 @@ export class Visual implements IVisual {
       this.swapSVGIcon(bottomIconSelected, bottomIconColour, this.footer_content_left_icon);
     }
 
-    this.swapSVGIcon("info", primaryColour, this.header_text_icon);
+    this.swapSVGIcon("info", primaryColour, this.information_tooltip_container_button_icon);
+
+    const middleIconSize: string = styleCard.centerIconSize.value.value as string;
+    const trendIconSize: string = styleCard.bottomLeftIconSize.value.value as string;
+
+    this.middle_content_center_icon.className = middleIconSize;
+    this.footer_content_left_icon.className = trendIconSize;
 
     /*##################################################################
       TITLE FONT DETAILS
@@ -452,7 +605,6 @@ export class Visual implements IVisual {
     this.footer_content_right_text_bottom.style.textAlign = footerTextBottomAlignment;
 
     const tableDataView = options.dataViews[0].table;
-    //verify that atleast one row exists otherwise we will get some runtime errors.
 
     //POSITION 0: HEADING
     //POSITION 1: CENTER VALUE
@@ -461,7 +613,8 @@ export class Visual implements IVisual {
     //POSITION 4: INCREASE/DECREASE
     //POSITION 5: INCREASE/DECREASE DIRECTION
     //POSITION 6: INFO DESCRIPTION
-    //POSITION 7: ACCESSIBILITY
+    //POSITION 7: TREND DESCRIPTION
+    //POSITION 8: ACCESSIBILITY
     this.toggleParagraphElement(tableDataView, 0, this.header_text);
     this.toggleParagraphElement(tableDataView, 1, this.middle_content_center_text);
     this.toggleParagraphElement(tableDataView, 2, this.footer_content_right_text_top);
@@ -469,21 +622,211 @@ export class Visual implements IVisual {
     this.toggleTrendElement(
       tableDataView,
       4,
-      this.middle_content_center_trend,
-      this.middle_content_center_trend_text,
-      this.middle_content_center_trend_icon,
+      this.information_trend_container,
+      this.information_trend_container_text,
+      this.information_trend_container_icon,
       trendIconSelected,
       trendUpColour,
       trendDownColour,
       5
     );
+
+    const tooltipTitleInfo = this.getData(tableDataView, 0);
+    const tooltipDescriptionInfo = this.getData(tableDataView, 6);
+
+    const tooltipTitleTrend = tooltipTitleInfo + " Trend";
+    const tooltipDescriptionTrend = this.getData(tableDataView, 7);
+
     /*##################################################################
-      TOOLTIP SETTINGS
-     ##################################################################*/
-    this.setTooltip(tableDataView, 6, this.header_text_icon, 0);
+      MAIN CCONTENT TOOLTIP SETTINGS
+    ##################################################################*/
+
+    if (!this.main_content.onmouseleave) {
+      this.main_content.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
+
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
+      };
+    }
+
+    if (!this.main_content.onmouseenter) {
+      this.main_content.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
+      };
+    }
+
     /*##################################################################
-      TREND SETTINGS
-     ##################################################################*/
+      INFO TOOLTIP SETTINGS
+    ##################################################################*/
+    const tooltipInfoChanged =
+      tooltipTitleInfo !== this.currentTooltipInfoTitle ||
+      tooltipDescriptionInfo !== this.currentTooltipInfoDescription;
+
+    //If title or description have changed remove the events and recreate them later.
+    //otherwise the title and description will be wrong
+    //only remove the event if one exists
+    if (tooltipInfoChanged) {
+      this.currentTooltipInfoTitle = tooltipTitleInfo;
+      this.currentTooltipInfoDescription = tooltipDescriptionInfo;
+
+      this.information_tooltip_container_button.onclick = null;
+      this.information_tooltip_container_button.onmouseenter = null;
+    }
+
+    const infoTooltipEvent = this.debounce(this.onInfoTooltipEvent.bind(this), 500);
+
+    if (!this.information_tooltip_container_button.onmouseleave) {
+      this.information_tooltip_container_button.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
+      };
+    }
+
+    if (!this.information_tooltip_container_button.onmouseenter) {
+      this.information_tooltip_container_button.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
+        infoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+      };
+    }
+
+    if (!this.information_tooltip_container_button.onclick) {
+      this.information_tooltip_container_button.onclick = (event) => {
+        infoTooltipEvent(event, tooltipTitleInfo, tooltipDescriptionInfo);
+      };
+    }
+    /*##################################################################
+      TREND TOOLTIP SETTINGS
+    ##################################################################*/
+    const tooltipTrendChanged = tooltipDescriptionTrend !== this.currentTooltipTrendDescription;
+
+    if (tooltipTrendChanged) {
+      this.currentTooltipTrendTitle = tooltipTitleTrend;
+      this.currentTooltipTrendDescription = tooltipDescriptionTrend;
+      this.information_trend_container_button.onclick = null;
+      this.information_trend_container_button.onmouseenter = null;
+    }
+
+    const trendTooltipEvent = this.debounce(this.onTrendTooltipEvent.bind(this), 500);
+
+    if (!this.information_trend_container_button.onmouseleave) {
+      this.information_trend_container_button.onmouseleave = (event) => {
+        this.isMouseInContainer = false;
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+        this.setIconTooltipToggle(false);
+      };
+    }
+
+    if (!this.information_trend_container_button.onmouseenter) {
+      this.information_trend_container_button.onmouseenter = (event) => {
+        this.isMouseInContainer = true;
+        trendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+      };
+    }
+
+    if (!this.information_trend_container_button.onclick) {
+      this.information_trend_container_button.onclick = (event) => {
+        trendTooltipEvent(event, tooltipTitleTrend, tooltipDescriptionTrend);
+      };
+    }
+
+    this.events.renderingFinished(options);
+  }
+
+  private onInfoTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
+    if (
+      event.type === "click" ||
+      event.type === "mouseenter" ||
+      (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
+    ) {
+      event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+      event.stopPropagation();
+
+      if (!this.isMouseInContainer) return;
+
+      const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+
+      if (this.isInfoTooltipOpen) {
+        this.hideTooltip();
+        this.setIconTooltipToggle(false);
+      } else {
+        this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo);
+        this.setIconTooltipToggle(true);
+        this.setTrendTooltipToggle(false);
+      }
+    }
+  }
+
+  private onTrendTooltipEvent(event: any, tooltipTitle: string, tooltipDescriptionInfo: string) {
+    if (
+      event.type === "click" ||
+      event.type === "mouseenter" ||
+      (event.type === "keydown" && (event.key === " " || event.key === "Enter"))
+    ) {
+      event.preventDefault(); //Prevents OnClick and OnKeyDown from being triggered at the same time
+      event.stopPropagation();
+
+      if (!this.isMouseInContainer) return;
+
+      const target = <HTMLDivElement>(<SVGElement>event.target).parentElement;
+
+      if (this.isTrendTooltipOpen) {
+        this.hideTooltip();
+        this.setTrendTooltipToggle(false);
+      } else {
+        this.showTooltip(target, tooltipTitle, tooltipDescriptionInfo, false);
+        this.setTrendTooltipToggle(true);
+        this.setIconTooltipToggle(false);
+      }
+    }
+  }
+
+  private debounce(func, delay) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout); // Clear any existing timeout
+      timeout = setTimeout(() => {
+        func.apply(context, args); // Execute the function after the delay
+      }, delay);
+    };
+  }
+
+  private setIconTooltipToggle(value: boolean) {
+    this.isInfoTooltipOpen = value;
+    this.information_tooltip_container_button.ariaExpanded = String(value);
+  }
+
+  private setTrendTooltipToggle(value: boolean) {
+    this.isTrendTooltipOpen = value;
+    this.information_trend_container_button.ariaExpanded = String(value);
+  }
+
+  private hideTooltip() {
+    this.tooltipService.hide({ immediately: true, isTouchEvent: false });
+  }
+  private showTooltip(target: HTMLElement, title: string, description: string, leftJustified: boolean = true) {
+    const width = target.clientWidth;
+    const y = target.offsetTop;
+
+    const x = leftJustified ? target.offsetLeft + width : target.offsetLeft + width / 2;
+
+    this.tooltipService.show({
+      coordinates: [x, y],
+      isTouchEvent: false,
+      dataItems: [
+        {
+          displayName: "",
+          value: description,
+          header: title,
+        },
+      ],
+      identities: [],
+    });
   }
 
   private getData(tableDataView: powerbi.DataViewTable, position: number) {
@@ -518,15 +861,13 @@ export class Visual implements IVisual {
     directionPosition: number
   ) {
     const textValue = this.getData(tableDataView, trendPosition);
-    textElement.textContent = textValue;
 
     if (textValue === "") {
+      textElement.textContent = "";
       return;
     }
 
-    const floatValue = parseFloat(textValue);
-
-    if (trendIconSelected === "hide" || !floatValue || floatValue === 0) {
+    if (trendIconSelected === "hide" || textValue === "0%") {
       containingElement.hidden = true;
       return;
     }
@@ -535,50 +876,26 @@ export class Visual implements IVisual {
 
     const directionValue = this.getData(tableDataView, directionPosition);
 
+    textElement.textContent =
+      (directionValue === "up-positive" || directionValue === "up-negative"
+        ? "+ "
+        : directionValue === "down-positive" || directionValue === "down-negative"
+        ? "- "
+        : "") + textValue;
+
+    if (trendIconSelected === "none") {
+      iconElement.hidden = true;
+      return;
+    }
+    iconElement.hidden = false;
+
     this.swapSVGIcon(
-      trendIconSelected.replace("#", directionValue),
-      floatValue > 0 ? trendUpColour : trendDownColour,
+      trendIconSelected.replace("#", directionValue.split("-")[0]),
+      directionValue === "up-positive" || directionValue === "down-positive" ? trendUpColour : trendDownColour,
       iconElement
     );
   }
 
-  private setTooltip(
-    tableDataView: powerbi.DataViewTable,
-    tooltipPosition: number,
-    tooltipElement: HTMLDivElement,
-    headingPosition: number
-  ) {
-    if (tooltipElement) {
-      const description = this.getData(tableDataView, tooltipPosition);
-      const heading = this.getData(tableDataView, headingPosition);
-
-      this.tooltipServiceWrapper.addTooltip(d3Select(tooltipElement), () => {
-        return [
-          {
-            displayName: "",
-            value: description,
-            color: "#FFFFFF",
-            header: heading,
-          },
-        ];
-      });
-    } else {
-      this.tooltipServiceWrapper.hide();
-    }
-  }
-
-  private getTooltipData(value: string): VisualTooltipDataItem[] {
-    //const formattedValue = valueFormatter.format(value.value, value.format);
-    //const language = this.localizationManager.getDisplayName("LanguageKey");
-    return [
-      {
-        displayName: value,
-        value: value,
-        color: "red",
-        header: value && "displayed language " + value,
-      },
-    ];
-  }
   /**
    * Returns properties pane formatting model content hierarchies, properties and latest formatting values, Then populate properties pane.
    * This method is called once every time we open properties pane or when the user edit any format property.
@@ -587,14 +904,16 @@ export class Visual implements IVisual {
     return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
   }
 
-  private swapSVGIcon(iconValue: string, currentColor: string, div: HTMLDivElement) {
+  private swapSVGIcon(iconValue: string, currentColor: string, div: HTMLElement) {
     const parser = new DOMParser();
-    var icon = parser.parseFromString(this.getSVGIcon(iconValue, currentColor), "image/svg+xml").firstChild;
-
+    var icon = parser.parseFromString(this.getSVGIcon(iconValue, currentColor), "image/svg+xml")
+      .firstChild as SVGElement;
+    //icon.ariaHidden = "true";
     while (div.firstChild) {
       div.removeChild(div.lastChild);
     }
 
+    icon.style = "pointer-events: none;";
     div.appendChild(icon);
   }
 
@@ -1119,6 +1438,104 @@ export class Visual implements IVisual {
           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
           currentColor +
           '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>'
+        );
+
+      case "bike":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bike-icon lucide-bike"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>'
+        );
+      case "bus":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bus-icon lucide-bus"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>'
+        );
+      case "circle-parking":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-parking-icon lucide-circle-parking"><circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>'
+        );
+      case "house-plus":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house-plus-icon lucide-house-plus"><path d="M12.662 21H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v2.475"/><path d="M14.959 12.717A1 1 0 0 0 14 12h-4a1 1 0 0 0-1 1v8"/><path d="M15 18h6"/><path d="M18 15v6"/></svg>'
+        );
+      case "clipboard-list":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list-icon lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>'
+        );
+      case "clipboard-pen-line":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-pen-line-icon lucide-clipboard-pen-line"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.5"/><path d="M16 4h2a2 2 0 0 1 1.73 1"/><path d="M8 18h1"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg>'
+        );
+      case "drama":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-drama-icon lucide-drama"><path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 9.9c-.8.8-2 .8-2.8 0"/><path d="M10.1 7.1C9 7.2 7.7 7.7 6 8.6c-3.5 2-4.7 3.9-3.7 5.6 4.5 7.8 9.5 8.4 11.2 7.4.9-.5 1.9-2.1 1.9-4.7"/><path d="M9.1 16.5c.3-1.1 1.4-1.7 2.4-1.4"/></svg>'
+        );
+      case "handshake":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake-icon lucide-handshake"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>'
+        );
+      case "landmark":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-landmark-icon lucide-landmark"><path d="M10 18v-7"/><path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></svg>'
+        );
+      case "luggage":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-luggage-icon lucide-luggage"><path d="M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/><path d="M10 20h4"/><circle cx="16" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>'
+        );
+      case "mic-vocal":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-vocal-icon lucide-mic-vocal"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12"/><path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5"/><circle cx="16" cy="7" r="5"/></svg>'
+        );
+      case "party-popper":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-party-popper-icon lucide-party-popper"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>'
+        );
+      case "tent":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tent-icon lucide-tent"><path d="M3.5 21 14 3"/><path d="M20.5 21 10 3"/><path d="M15.5 21 12 15l-3.5 6"/><path d="M2 21h20"/></svg>'
+        );
+      case "theater":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-theater-icon lucide-theater"><path d="M2 10s3-3 3-8"/><path d="M22 10s-3-3-3-8"/><path d="M10 2c0 4.4-3.6 8-8 8"/><path d="M14 2c0 4.4 3.6 8 8 8"/><path d="M2 10s2 2 2 5"/><path d="M22 10s-2 2-2 5"/><path d="M8 15h8"/><path d="M2 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M14 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/></svg>'
+        );
+
+      case "waves-ladder":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-waves-ladder-icon lucide-waves-ladder"><path d="M19 5a2 2 0 0 0-2 2v11"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M7 13h10"/><path d="M7 9h10"/><path d="M9 5a2 2 0 0 0-2 2v11"/></svg>'
+        );
+      case "construction":
+        return (
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' +
+          currentColor +
+          '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-construction-icon lucide-construction"><rect x="2" y="6" width="20" height="8" rx="1"/><path d="M17 14v7"/><path d="M7 14v7"/><path d="M17 3v3"/><path d="M7 3v3"/><path d="M10 14 2.3 6.3"/><path d="m14 6 7.7 7.7"/><path d="m8 6 8 8"/></svg>'
         );
 
       case "loading-circle":

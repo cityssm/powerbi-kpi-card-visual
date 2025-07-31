@@ -1,9 +1,27 @@
 # City of Sault Ste. Marie Power BI Card Visual
 
 This project is a simple Card Visual for displaying Key Performance Indicators.  
-It is designed to show a single row of data.
 
 <img width="612" height="359" alt="image" src="https://github.com/user-attachments/assets/23006cab-4160-431c-b359-5835444391a7" />
+
+
+## About this Project
+
+- 🤗 [Code of Conduct](CODE_OF_CONDUCT.md)
+- 🥰 [Contributing Guidelines](CONTRIBUTING.md)
+- 🛡️ [Security Policy](SECURITY.md)
+- 📃 [MIT Licence](LICENSE.md)
+
+This project was the result of an initiative to make data more available to the public.
+
+This visual was designed to display a single row of data, with limited interactivity.
+
+Previously we were using custom groupings of shapes, icons, and text, but as the number of data elements grew it became harder to manipulate and manage.
+
+This visual was developed to fix this overhead and streamline updating the data points.
+
+Although the visual is quite niche, it's being released in an open-source environment in the hope that someone else might find this simple card useful.
+
 
 ## Data Requirements
 
@@ -21,14 +39,13 @@ It requires 9 Data Points be provided:
 
 This package includes a set of 105 SVG [Lucide Icons](https://lucide.dev/icons/)
 
-## Install
+## Install in Power BI Desktop
 
-- Assign Power BI Pro/Premium License
 - Import the .pbiviz file from the \dist folder
+<img width="217" height="453" alt="image" src="https://github.com/user-attachments/assets/770cf09a-c166-4d69-899b-961da075965e" />
 
 ## Modify
 
-- Assign Power BI Pro/Premium License
 - Install Node.JS
 - Install pbiviz
   - npm i -g powerbi-visuals-tools@latest
@@ -37,16 +54,18 @@ This package includes a set of 105 SVG [Lucide Icons](https://lucide.dev/icons/)
 - Run pbiviz start to test the visual in your Online Environment
 - Navigate to the Local Host URL, normally [localhost:8080](https://localhost:8080/)
 - Accept the Self Signed SSL certificate
-- Run pbiviz package to build the visual
-- Open Power BI Desltop and Import the Package from the dist folder.
+- Add a developer visual to the Online Power BI Report
+<img width="306" height="216" alt="image" src="https://github.com/user-attachments/assets/49784ccf-9378-4fae-9f71-41b051b24cd2" />
+
   
-## Run
+## Run Development Server
 
 - pbiviz start
 
 ## Package
 
 - pbiviz package
+- Open Power BI Desltop and Import the Package from the dist folder.
 
 ## Example Cards
 

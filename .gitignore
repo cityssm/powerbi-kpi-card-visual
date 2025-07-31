@@ -164,13 +164,7 @@ webpack.statistics.*.html
 
 dist/*
 !dist/*.pbiviz
+
 .tmp/*
-
-
-.tmp/build/.tmp/precompile/visualPlugin.d.ts
-.tmp/drop/pbiviz.json
-.tmp/drop/status
-.tmp/drop/visual.css
-.tmp/drop/visual.js
-.tmp/precompile/visualPlugin.ts
+.vscode/*
 

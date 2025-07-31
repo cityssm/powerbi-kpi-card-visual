@@ -1,7 +1,11 @@
-# City of Sault Ste. Marie Power BI Visual
+# City of Sault Ste. Marie Power BI Card Visual
 
 This project is a simple Card Visual for displaying Key Performance Indicators.  
 It is designed to show a single row of data.
+
+<img width="612" height="359" alt="image" src="https://github.com/user-attachments/assets/23006cab-4160-431c-b359-5835444391a7" />
+
+## Data Requirements
 
 It requires 9 Data Points be provided:
 
@@ -14,6 +18,46 @@ It requires 9 Data Points be provided:
 6. Information Tooltip Text (String)
 7. Trend Tooltip Text (String)
 8. Accessibility Text (String)
+
+This package includes a set of 105 SVG [Lucide Icons](https://lucide.dev/icons/)
+
+## Install
+
+- Assign Power BI Pro/Premium License
+- Import the .pbiviz file from the \dist folder
+
+## Modify
+
+- Assign Power BI Pro/Premium License
+- Install Node.JS
+- Install pbiviz
+  - npm i -g powerbi-visuals-tools@latest
+- Enable Power BI developer Mode in an Online Project
+- Clone this project
+- Run pbiviz start to test the visual in your Online Environment
+- Navigate to the Local Host URL, normally [localhost:8080](https://localhost:8080/)
+- Accept the Self Signed SSL certificate
+- Run pbiviz package to build the visual
+- Open Power BI Desltop and Import the Package from the dist folder.
+  
+## Run
+
+- pbiviz start
+
+## Package
+
+- pbiviz package
+
+## Example Cards
+
+<img width="1180" height="734" alt="image" src="https://github.com/user-attachments/assets/16d64c40-d7e9-4dec-8627-c086c00eb87b" />
+
+
+## Text, Style, and Data Configuration Examples:
+
+<img width="1231" height="809" alt="image" src="https://github.com/user-attachments/assets/d56b3f62-1880-4d30-9da8-5ae508e2b972" />
+
+
 
 ## Example Massaged Data:
 
@@ -68,39 +112,3 @@ It requires 9 Data Points be provided:
 ```
 = Table.RenameColumns(#"Added Concatenated Accessibility Column",{{"kpi_group_name", "KPI_0_Name"}, {"KPI_Formatted_Value", "KPI_1_Formatted_Value"}, {"kpi_date_heading", "KPI_2_Date_Heading"}, {"KPI_Current_Formatted_Date", "KPI_3_Current_Formatted_Date"}, {"KPI_Formatted_Trend", "KPI_4_Trend"}, {"KPI_Formatted_Trend_Direction", "KPI_5_Trend_Direction"},{"KPI_Formatted_Description", "KPI_6_Description_ToolTip"},{"KPI_Formatted_Trend_Description", "KPI_7_Description_Trend"}, {"Accessibility", "KPI_8_Accessibility"}})
 ```
-This package includes a set of 105 SVG [Lucide Icons](https://lucide.dev/icons/)
-
-## Install
-
-- Assign Power BI Pro/Premium License
-- Import the .pbiviz file from the \dist folder
-
-## Modify
-
-- Assign Power BI Pro/Premium License
-- Install Node.JS
-- Install pbiviz
-  - npm i -g powerbi-visuals-tools@latest
-- Enable Power BI developer Mode in an Online Project
-- Clone this project
-- Run pbiviz start to test the visual in your Online Environment
-- Navigate to the Local Host URL, normally [localhost:8080](https://localhost:8080/)
-- Accept the Self Signed SSL certificate
-- Run pbiviz package to build the visual
-- Open Power BI Desltop and Import the Package from the dist folder.
-
-## Example Cards
-
-![image](https://github.com/user-attachments/assets/e81b46b1-d20a-42d4-8f3f-5808f6a82088)
-
-## Text, Style, and Data Configuration Examples:
-
-<img width="1231" height="809" alt="image" src="https://github.com/user-attachments/assets/d56b3f62-1880-4d30-9da8-5ae508e2b972" />
-
-## Run
-
-- pbiviz start
-
-## Package
-
-- pbiviz package

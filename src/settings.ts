@@ -2137,7 +2137,7 @@ class StyleCardSettings extends FormattingSettingsCard {
   borderRadius = new formattingSettings.Slider({
     name: "borderRadius",
     displayName: "Border Radius",
-    value: 0,
+    value: 5,
     // optional input value validator
     options: {
       maxValue: {
@@ -2311,6 +2311,41 @@ class TextCardSetting extends formattingSettings.SimpleCard {
     underline: this.value_underline, //optional
   });
 
+  public trend_fontFamily: formattingSettings.FontPicker = new formattingSettings.FontPicker({
+    name: "trend_fontFamily", // same as capabilities property name
+    value: "Arial, sans-serif",
+  });
+
+  public trend_fontSize: formattingSettings.NumUpDown = new formattingSettings.NumUpDown({
+    name: "trend_fontSize", // same as capabilities property name
+    value: 15,
+  });
+
+  public trend_bold: formattingSettings.ToggleSwitch = new formattingSettings.ToggleSwitch({
+    name: "trend_bold", // same as capabilities property name
+    value: false,
+  });
+
+  public trend_italic: formattingSettings.ToggleSwitch = new formattingSettings.ToggleSwitch({
+    name: "trend_italic", // same as capabilities property name
+    value: false,
+  });
+
+  public trend_underline: formattingSettings.ToggleSwitch = new formattingSettings.ToggleSwitch({
+    name: "trend_underline", // same as capabilities property name
+    value: false,
+  });
+
+  public trend_font: formattingSettings.FontControl = new formattingSettings.FontControl({
+    name: "trend_font", // must be unique within the same object
+    displayName: "Trend Font",
+    fontFamily: this.trend_fontFamily,
+    fontSize: this.trend_fontSize,
+    bold: this.trend_bold, //optional
+    italic: this.trend_italic, //optional
+    underline: this.trend_underline, //optional
+  });
+
   public title_alignment: formattingSettings.AlignmentGroup = new formattingSettings.AlignmentGroup({
     name: "title_alignment",
     displayName: "Title Alignment",
@@ -2344,6 +2379,7 @@ class TextCardSetting extends formattingSettings.SimpleCard {
     this.title_alignment,
     this.value_font,
     this.value_alignment,
+    this.trend_font,
     this.footer_text_top_font,
     this.footer_text_top_alignment,
     this.footer_text_bottom_font,

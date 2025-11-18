@@ -99,6 +99,65 @@
             "bool": true
           }
         },
+
+        "value_fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "value_fontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "value_bold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "value_italic": {
+          "type": {
+            "bool": true
+          }
+        },
+        "value_underline": {
+          "type": {
+            "bool": true
+          }
+        },
+        "trend_fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "trend_fontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "trend_bold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "trend_italic": {
+          "type": {
+            "bool": true
+          }
+        },
+        "trend_underline": {
+          "type": {
+            "bool": true
+          }
+        },
         "title_alignment": {
           "type": {
             "formatting": {

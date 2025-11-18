@@ -14,8 +14,10 @@
     "lint": "npx eslint ."
   },
   "dependencies": {
+    "@lucide/lab": "^0.1.2",
     "@types/d3": "7.4.3",
     "d3": "7.9.0",
+    "lucide": "^0.554.0",
     "powerbi-visuals-api": "~5.3.0",
     "powerbi-visuals-utils-dataviewutils": "^6.1.0",
     "powerbi-visuals-utils-formattingmodel": "6.0.4",
